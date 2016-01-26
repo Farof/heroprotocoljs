@@ -95,6 +95,18 @@ Specifically, data structures of type '__parent' are not used in supported proto
 
 The port currently uses synchronous file system access and the plan is to provide both sychonous and asynchronous functions.
 
+### How it works
+
+Heroes of the Storm replay files are MPQ archives. heroprotocol uses the mpyq library to read and extract the binary content out of the archive. It then parses the binary content into data structures containing the replay information.
+
+The three main files are:
+
+- decoders.js: Contains the binary structures decoders. They are the same for all versions of the game.
+- protocol#####.js: Contains the data structures description of a specific public release of the game.
+- heroprotocol.js: Entry point. Exports the ReplayDecoder and provides the CLI.
+
+heroprotocol.js starts by loading the earliest protocol available, protocol29406.js and uses it to parse the replay header. It then reads the replay build version in the header and loads the associated protocol#####.js containing the correct data structures to parse the full replay.
+
 ## Plans
 
 What I always wanted for personal use is a bulk analyzer that takes all your replays and give you stats, so that's my end goal for now. If it goes well I'd like to provide a website for anyone to see their stats whithout having to install this tool. Along the way I hope I can provide tools to read individual or multiple replays and all information associated in a friendlier way than Blizzard's data structures. I would also like to build a reference for those data structure. Finally I would like to explore the possibility of using this library directory in the browser, as while hard it's certainly feasible and would help third-party tool creation greatly.
