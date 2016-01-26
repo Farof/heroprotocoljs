@@ -99,7 +99,7 @@ The port currently uses synchronous file system access and the plan is to provid
 
 What I always wanted for personal use is a bulk analyzer that takes all your replays and give you stats, so that's my end goal for now. If it goes well I'd like to provide a website for anyone to see their stats whithout having to install this tool. Along the way I hope I can provide tools to read individual or multiple replays and all information associated in a friendlier way than Blizzard's data structures. I would also like to build a reference for those data structure. Finally I would like to explore the possibility of using this library directory in the browser, as while hard it's certainly feasible and would help third-party tool creation greatly.
 
-Any small or big contribution appreciated whether in code or documentation.
+Any small or big contribution appreciated whether in code, documentation, feedback or feature request.
 
 ## Tracker Events
 
