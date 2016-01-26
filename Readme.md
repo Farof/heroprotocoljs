@@ -1,6 +1,6 @@
 # heroprotocoljs
 
-heroprotocoljs is a Javascript port of [heroprotocol](https://github.com/Blizzard/heroprotocol), a reference Python library and standalone tool to decode Heroes of the Storm replay files into Python data structures.
+heroprotocoljs is a Javascript port of [heroprotocol](https://github.com/Blizzard/heroprotocol). It is a library and standalone tool to decode Heroes of the Storm replay files into Javascript data structures.
 
 Currently heroprotocoljs can decode these structures and events:
 
@@ -22,6 +22,41 @@ to be just the first tool in the chain for your data mining application.
 
 ## Usage
 
+### As a library
+
+    const heroprotocol = require('heroprotocoljs');
+    var replayDecoder = new heroprotocol.ReplayDecoder('file.StormReplay');
+
+    replayDecoder.parse('details');
+    
+    // display the players name alphabetically
+    var players = replayDecoder.details.m_playerList.map(player => player.m_name);
+    console.log('Players:', players.sort());
+    
+    // display the map name
+    console.log(replayDecoder.details.m_title);
+
+#### Example
+
+An usage example is provided in the "example" folder. It displays the map name and players name.
+
+    const ReplayDecoder = require('../heroprotocol').ReplayDecoder;
+    
+    var decoder = new ReplayDecoder(process.argv[2]);
+    
+    var details = decoder.parse('details');
+    var players = details.m_playerList.map(player => player.m_name.toString());
+    
+    console.log('Map:', details.m_title);
+    console.log('Players:', players.sort());
+
+Output:
+
+    Map: Battlefield of Eternity
+    Players: […]
+    
+### As a command line tool
+
     usage: heroprotocol.js replayFile [--help] [--gameevents] [--messageevents]
     [--trackerevents] [--attributeevents] [--header] [--details] [--initdata]
     [--stats] [--print] [--extract]
@@ -37,7 +72,6 @@ to be just the first tool in the chain for your data mining application.
       -m, --messageevents    parse protocol messageevents                         [boolean]
       -t, --trackerevents    parse protocol trackerevents                         [boolean]
       -a, --attributeevents  parse protocol attributeevents                       [boolean]
-      --players              print players name                                   [boolean]
 
 To print the replay header:
 
@@ -46,10 +80,6 @@ To print the replay header:
 To extract the replay messages:
 
     node heroprotocol.js replay.StormReplay -m -x
-
-To print players name:
-
-    node heroprotocol.js replay.StormReplay --players
 
 ## Supported Versions
 
@@ -61,7 +91,15 @@ This is a direct port with nothing fancy and little Javascript adjustments or op
 
 While this port has been successfully used to perform the operations provided and analyze replay files of Heroes of the Storm, not all codepaths have been tested and bugs may arise.
 
-Specifically, data structures of type '__parent' are not used in supported protocols and currently throw an error if encountered.
+Specifically, data structures of type '__parent' are not used in supported protocols and currently throw an error if encountered. The '--stats' option for the command line tool is also currently not supported.
+
+The port currently uses synchronous file system access and the plan is to provide both sychonous and asynchronous functions.
+
+## Plans
+
+What I always wanted for personal use is a bulk analyzer that takes all your replays and give you stats, so that's my end goal for now. If it goes well I'd like to provide a website for anyone to see their stats whithout having to install this tool. Along the way I hope I can provide tools to read individual or multiple replays and all information associated in a friendlier way than Blizzard's data structures. I would also like to build a reference for those data structure. Finally I would like to explore the possibility of using this library directory in the browser, as while hard it's certainly feasible and would help third-party tool creation greatly.
+
+Any small or big contribution appreciated whether in code or documentation.
 
 ## Tracker Events
 

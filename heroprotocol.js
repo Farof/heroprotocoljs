@@ -24,26 +24,29 @@ const path = require('path');
 const fs = require('fs');
 
 const mpq = require('../mpyqjs/mpyq');
-const MPQArchive = mpq.MPQArchive;
+const MPQArchive = exports.MPQArchive = mpq.MPQArchive;
 const protocol29406 = require('./protocol29406');
 
-
+// sort object and read buffer strings, recursively
 function prepare(obj) {
-  var ret = {}, keys = Object.keys(obj), key, value;
-  
-  for (key of keys.sort()) {
-    value = obj[key];
-    
-    if (value instanceof Buffer) value = value.toString();
-    if (value && typeof value === 'object') value = prepare(value);
-    
-    ret[key] = value;
+  if (!obj) {
+     return obj;
+  } else if (obj instanceof Buffer) {
+    return obj.toString();
+  } else if (Array.isArray(obj)) {
+    for (var i = 0, ln = obj.length; i < ln; i += 1) {
+      obj[i] = prepare(obj[i]);
+    }
+    return obj;
+  } else if (typeof obj === 'object') {
+    var ret = {};
+    Object.keys(obj).sort().forEach(key => ret[key] = prepare(obj[key]));
+    return ret;
   }
-  
-  return ret;
+  return obj;
 }
 
-
+// EventLogger
 function EventLogger() {
   this._eventStats = {};
 }
@@ -57,43 +60,122 @@ EventLogger.prototype.log = function(event) {
     this._eventStats[event._event] = stat;
   }
   
-  event = prepare(event);
   console.log(event);
 };
 
 EventLogger.prototype.logStats = function() {
-  throw 'handle';
+  throw 'not yet ported';
   Object.keys(this._eventStats).sort().forEach(key => {
     
   });
 };
 
 
-function Extractor(replay) {
-  this.replay = replay;
-  this.extension = path.extname(replay);
-  this.archiveName = path.basename(replay, this.extension);
-  this.dirName = path.join(process.cwd(), this.archiveName);
-}
-
-Extractor.prototype.init = function() {
+// ReplayDecoder
+const ReplayDecoder = exports.ReplayDecoder = function(file) {
+  if (typeof file === 'string') {
+    try {
+      if (!path.isAbsolute(file))
+        file = path.join(process.cwd(), file);
+      this.archive = new MPQArchive(file);
+      this.filename = file;
+    } catch (err) {
+      console.log('Error opening replay: ', file);
+      console.log(err);
+    }
+  } else if (file instanceof MPQArchive) {
+    archive = file;
+    if (archive.filename) this.filename = archive.filename;
+  } else {
+    console.log('Unsupported setup parameter: ', file);
+  }
+  
+  if (!this.archive) return null;
+  
+  this.logger = new EventLogger();
+  
+  // Read the protocol header, this can be read with any protocol
+  var contents = this.archive.header.userDataHeader.content;
+  this.header = prepare(protocol29406.decodeReplayHeader(contents));
+  
+  
+  // The header's baseBuild determines which protocol to use
+  this.baseBuild = this.header.m_version.m_baseBuild;
   try {
-    fs.statSync(this.dirName);
+    this.protocol = require('./protocol' + this.baseBuild);
   } catch (err) {
-    fs.mkdirSync(this.dirName);
+    console.log('Unsupported base build: ' + this.baseBuild);
+    return null;
   }
 };
 
-Extractor.prototype.getPath = function(file) {
-  return path.join(this.dirName, ['replay', file, 'json'].join('.'));
+ReplayDecoder.prototype.parse = function(name) {
+  if (name === 'details') {
+    return this.details = prepare(this.protocol.decodeReplayDetails(this.archive.readFile('replay.details')));
+  } else if (name === 'initdata') {
+    return this.initdata = prepare(this.protocol.decodeReplayInitdata(this.archive.readFile('replay.initData')));
+  } else if (name === 'gameevents') {
+    this.gameevents = [];
+    for (event of this.protocol.decodeReplayGameEvents(this.archive.readFile('replay.game.events'))) {
+      this.gameevents.push(prepare(event));
+    }
+    return this.gameevents;
+  } else if (name === 'messageevents') {
+    this.messageevents = [];
+    for (event of this.protocol.decodeReplayMessageEvents(this.archive.readFile('replay.message.events'))) {
+      this.messageevents.push(prepare(event));
+    }
+    return this.messageevents;
+  } else if (name === 'trackerevents') {
+    this.trackerevents = [];
+    for (event of this.protocol.decodeReplayTrackerEvents(this.archive.readFile('replay.tracker.events'))) {
+      this.trackerevents.push(prepare(event));
+    }
+    return this.trackerevents;
+  } else if (name === 'attributesevents') {
+    return this.attributesevents = prepare(this.protocol.decodeReplayAttributesEvents(this.archive.readFile('replay.attributes.events')));
+  } else {
+    console.log('Unsupported file:', name);
+  }
 };
 
-Extractor.prototype.extract = function(file, data) {
-  this.init();
-  try {
-    fs.writeFileSync(this.getPath(file), JSON.stringify(prepare(data), null, '  '));
-  } catch (err) {
-    console.trace(err);
+ReplayDecoder.prototype.log = function(name) {
+  if (this[name]) {
+    if (name.indexOf('events') > -1) {
+      var events = this[name], event;
+      for (event of events) this.log(event);
+    } else {
+      if (name === 'initdata') {
+        this.logger.log(this.initdata.m_syncLobbyState.m_gameDescription.m_cacheHandles);
+      }
+      this.logger.log(this[name]);
+    }
+  }
+};
+
+ReplayDecoder.prototype.logStats = function () {
+  this.logger.logStats();
+};
+
+ReplayDecoder.prototype.extractSync = function(name) {
+  var attr = name.split('.').join('');
+  if (this[attr]) {
+    var dirname = path.join(process.cwd(), path.basename(this.filename, path.extname(this.filename)));
+    
+    try {
+      fs.statSync(dirname);
+    } catch (err) {
+      fs.mkdirSync(dirname);
+    }
+    
+    try {
+      fs.writeFileSync(
+        path.join(dirname, ['replay', name, 'json'].join('.')),
+        JSON.stringify(this[attr], null, '  ')
+      );
+    } catch(err) {
+      console.trace(err);
+    }
   }
 };
 
@@ -128,109 +210,60 @@ if (require.main === module) {
     
     if (args.players) args.details = args.d = true;
     
-    const filename = process.cwd() + path.sep + args._[0];
-    try {
-      var archive = new MPQArchive(filename);
-    } catch (err) {
-      console.log('Error opening replay: ', filename);
-      console.log(err);
-      process.exit(1);
-    }
-    const logger = new EventLogger();
-    const extractor = new Extractor(args._[0]);
+    var replayDecoder = new ReplayDecoder(process.cwd() + path.sep + args._[0]);
     
-    // Read the protocol header, this can be read with any protocol
-    var contents = archive.header.userDataHeader.content;
-    const header = protocol29406.decodeReplayHeader(contents);
+    if(!replayDecoder) process.exit(1);
+    
     if (args.header) {
-      if (args.print) logger.log(header);
-      if (args.extract) extractor.extract('header', header);
-    }
-    
-    // The header's baseBuild determines which protocol to use
-    var baseBuild = header.m_version.m_baseBuild;
-    try {
-      var protocol = require('./protocol' + baseBuild);
-    } catch (err) {
-      console.log('Unsupported base build: ' + baseBuild);
-      throw err;
-      process.exit(1);
+      if (args.print) replayDecoder.log('header');
+      if (args.extract) replayDecoder.extractSync('header');
     }
     
     // Handle protocol details
     if (args.details) {
-      contents = archive.readFile('replay.details');
-      var details = protocol.decodeReplayDetails(contents);
-      if (args.print) logger.log(details);
-      if (args.extract) extractor.extract('details', details);
+      replayDecoder.parse('details');
+      if (args.print) replayDecoder.log('details');
+      if (args.extract) replayDecoder.extractSync('details');
     }
     
     // Handle protocol init data
     if (args.initdata) {
-      contents = archive.readFile('replay.initData');
-      var initdata = protocol.decodeReplayInitdata(contents);
-      if (args.print) {
-        logger.log(initdata.m_syncLobbyState.m_gameDescription.m_cacheHandles);
-        logger.log(initdata);
-      }
-      if (args.extract) {
-        extractor.extract('initdata', initdata);
-      }
+      replayDecoder.parse('initdata');
+      if (args.print) replayDecoder.log('initdata');
+      if (args.extract) replayDecoder.extractSync('initdata');
     }
     
     // Handle game events and/or game events stats
     if (args.gameevents) {
-      contents = archive.readFile('replay.game.events');
-      var gameevents = [];
-      for (event of protocol.decodeReplayGameEvents(contents)) {
-        if (args.print) logger.log(event);
-        gameevents.push(event);
-      }
-      
-      if (args.extract) extractor.extract('game.events', gameevents);
+      replayDecoder.parse('gameevents');
+      if (args.print) replayDecoder.log('gameevents');
+      if (args.extract) replayDecoder.extractSync('game.events');
     }
     
     // Handle message events
     if (args.messageevents) {
-      contents = archive.readFile('replay.message.events');
-      var messageevents = [];
-      for (event of protocol.decodeReplayMessageEvents(contents)) {
-        if (args.print) logger.log(event);
-        messageevents.push(event);
-      }
-      
-      if (args.extract) extractor.extract('message.events', messageevents);
+      replayDecoder.parse('messageevents');
+      if (args.print) replayDecoder.log('messageevents');
+      if (args.extract) replayDecoder.extractSync('message.events');
     }
     
     // Handle tracker events
     if (args.trackerevents) {
-      contents = archive.readFile('replay.tracker.events');
-      var trackerevents = [];
-      for (event of protocol.decodeReplayTrackerEvents(contents)) {
-        if (args.print) logger.log(event);
-        trackerevents.push(event);
-      }
-      
-      if (args.extract) extractor.extract('tracker.events', trackerevents);
+      replayDecoder.parse('trackerevents');
+      if (args.print) replayDecoder.log('trackerevents');
+      if (args.extract) replayDecoder.extractSync('tracker.events');
     }
     
     // Handle attributes events
     if (args.attributeevents) {
-      contents = archive.readFile('replay.attributes.events');
-      var attributes = protocol.decodeReplayAttributesEvents(contents);
-      if (args.print) logger.log(attributes);
-      if (args.extract) extractor.extract('attributes.events', attributes);
+      replayDecoder.parse('attributesevents');
+      if (args.print) replayDecoder.log('attributesevents');
+      if (args.extract) replayDecoder.extractSync('attributes.events');
     }
     
     // Print stats
     if (args.stats) {
-      logger.logStats();
-    }
-    
-    // Print players name
-    if (args.players) {
-      var players = details.m_playerList.map(player => player.m_name.toString());
-      console.log('Players: ', players.sort());
+      replayDecoder.logStats();
     }
     
   })();
