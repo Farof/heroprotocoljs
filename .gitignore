@@ -1,3 +1,6 @@
+*.StormReplay
+*replay.*.json
+
 # Logs
 logs
 *.log
