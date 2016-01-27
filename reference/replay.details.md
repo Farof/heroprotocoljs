@@ -66,7 +66,7 @@ Known heroes:
 - Crusader (= Johanna)
 - DemonHunter (= Valla)
 - Jaina
-- Johanna
+- Johanna (= Crusader)
 - Kael'thas (= Kaelthas)
 - Kaelthas (= Kael'thas)
 - Kerrigan

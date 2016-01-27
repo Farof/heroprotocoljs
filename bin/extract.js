@@ -27,6 +27,7 @@
    Todo:
      - estimate and display the remaining extraction time
      - add option to keep directory structure when extracting recursively
+     - add option to skip extraction if files already exists
 
 */
 "use strict";
