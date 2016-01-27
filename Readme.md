@@ -84,6 +84,12 @@ To extract the replay messages:
 To extrac everything:
 
     node heroprotocol.js replay.StormReplay -H -d -i -g -m -t -a --extract
+    
+Or you can use the extraction tool provided:
+
+    usage: node bin/extract.js file|dir ... [outdir] [-r] [-v]
+
+The `-r` option scans directories recursively and the `-v` option prints information like extraction time and number of succes and failures.
 
 ## Data reference
 

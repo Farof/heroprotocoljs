@@ -1,6 +1,6 @@
 {
   "name": "heroprotocoljs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Javascript port of the heroprotocol Python library to decode Heroes of the Storm replay protocols.",
   "main": "heroprotocol.js",
   "dependencies": {

@@ -104,8 +104,8 @@ const ReplayDecoder = exports.ReplayDecoder = function(file) {
   try {
     this.protocol = require('./protocol' + this.baseBuild);
   } catch (err) {
+    // TODO - should return error instead of console.log to not pollute output
     console.log('Unsupported base build: ' + this.baseBuild);
-    return null;
   }
 };
 
@@ -212,7 +212,7 @@ if (require.main === module) {
     
     var replayDecoder = new ReplayDecoder(process.cwd() + path.sep + args._[0]);
     
-    if(!replayDecoder) process.exit(1);
+    if(!replayDecoder.protocol) process.exit(1);
     
     if (args.header) {
       if (args.print) replayDecoder.log('header');
