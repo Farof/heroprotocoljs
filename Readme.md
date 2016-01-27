@@ -146,13 +146,13 @@ Some notes on tracker events:
 - Convert unit tag index, recycle pairs into unit tags (as seen in game events) with protocol.unitTag(index, recycle)
 - Interpret the NNet.Replay.Tracker.SUnitPositionsEvent events like this:
 
-      var unitIndex = event.m_firstUnitIndex;
-      for (var i = 0, ln = event.m_items.length; i < ln; i += 3) {
-        unitIndex += event.m_items[i + 0];
-        var x = event.m_items[i + 1] * 4;
-        var y = event.m_items[i + 2] * 4;
-        // unit identified by unitIndex at the current event._gameloop time is at approximate position (x, y)
-      }
+        var unitIndex = event.m_firstUnitIndex;
+        for (var i = 0, ln = event.m_items.length; i < ln; i += 3) {
+          unitIndex += event.m_items[i + 0];
+          var x = event.m_items[i + 1] * 4;
+          var y = event.m_items[i + 2] * 4;
+          // unit identified by unitIndex at the current event._gameloop time is at approximate position (x, y)
+        }
 
 - Only units that have inflicted or taken damage are mentioned in unit position events, and they occur periodically with a limit of 256 units mentioned per event.
 - NNet.Replay.Tracker.SUnitInitEvent events appear for units under construction. When complete you'll see a NNet.Replay.Tracker.SUnitDoneEvent with the same unit tag.
