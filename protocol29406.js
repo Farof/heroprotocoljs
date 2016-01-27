@@ -20,6 +20,8 @@
 # THE SOFTWARE.
 */
 
+exports.version = 29406;
+
 const decoders = require('./decoders');
 const BitPackedDecoder = decoders.BitPackedDecoder;
 const VersionDecoder = decoders.VersionDecoder;
