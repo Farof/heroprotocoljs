@@ -97,9 +97,9 @@ The following files are in the archive and supported by the library:
 
 - replay.details (see `reference/replay.details.md` for details)
 - replay.initdata (see `reference/replay.initdata.md` for details)
-- replay.game.events 
-- replay.message.events (see `reference/replay.message.events.md` for details)
-- replay.tracker.events (see `reference/replay.tracker.events.md` for details)
+- replay.game.events (see `reference/replay.message.events.md` for details)
+- replay.message.events
+- replay.tracker.events
 - replay.attributes.events
 
 Also accessible is the replay header (see `reference/header.md` for details).
