@@ -1,6 +1,6 @@
 # 1. m_cacheHandles (array)
 
-The array contains semi recognizable strings. Don't know if it's normal or because the Buffer is not parsed correctly.
+The strings don't contain any readable information and are identical to those exported by the original python library.
 
 # 2. m_campaignIndex (number)
 
@@ -68,7 +68,7 @@ Known heroes:
 - Jaina
 - Johanna
 - Kael'thas (= Kaelthas)
-- Kaelthas (= Kael'thas
+- Kaelthas (= Kael'thas)
 - Kerrigan
 - Leoric
 - Muradin

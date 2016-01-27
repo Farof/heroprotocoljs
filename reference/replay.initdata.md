@@ -2,9 +2,9 @@
 
 ## 1.1. m_gameDescription (object)
 
-### 1.1.1. m_cacheHandles (array)
+### 1.1.1. m_cacheHandles (array(string, string, ..., string))
 
-The array contains semi recognizable strings. Don't know if it's normal or because the Buffer is not parsed correctly.
+The strings don't contain any readable information and are identical to those exported by the original python library.
 
 ### 1.1.2. m_defaultAIBuild (number)
 
