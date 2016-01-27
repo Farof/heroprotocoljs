@@ -25,7 +25,7 @@ const fs = require('fs');
 
 const mpq = require('mpyqjs/mpyq');
 const MPQArchive = exports.MPQArchive = mpq.MPQArchive;
-const protocol29406 = require('./protocol29406');
+const protocol29406 = require('./lib/protocol29406');
 
 // sort object and read buffer strings, recursively
 function prepare(obj) {
@@ -102,7 +102,7 @@ const ReplayDecoder = exports.ReplayDecoder = function(file) {
   // The header's baseBuild determines which protocol to use
   this.baseBuild = this.header.m_version.m_baseBuild;
   try {
-    this.protocol = require('./protocol' + this.baseBuild);
+    this.protocol = require('./lib/protocol' + this.baseBuild);
   } catch (err) {
     // TODO - should return error instead of console.log to not pollute output
     console.log('Unsupported base build: ' + this.baseBuild);
