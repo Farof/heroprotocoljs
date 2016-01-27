@@ -23,7 +23,7 @@
 const path = require('path');
 const fs = require('fs');
 
-const mpq = require('../mpyqjs/mpyq');
+const mpq = require('mpyqjs/mpyq');
 const MPQArchive = exports.MPQArchive = mpq.MPQArchive;
 const protocol29406 = require('./protocol29406');
 
