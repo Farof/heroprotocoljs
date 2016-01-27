@@ -1,16 +1,5 @@
 replay.message.events is an array containing events whose types are specified in the `protocol#####.js` files under the `message_event_types` variable.
 
-# 1. NNet.Game.SChatMessage
-
-# 2. NNet.Game.SPingMessage
-
-# 3. NNet.Game.SLoadingProgressMessage
-
-# 4. NNet.Game.SServerPingMessage
-
-# 5. NNet.Game.SReconnectNotifyMessage
-replay.message.events is an array containing events whose types are specified in the `protocol#####.js` files under the `message_event_types` variable.
-
 Events contain generic properties and type specific properties.
 
 # Generic
