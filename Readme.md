@@ -81,6 +81,32 @@ To extract the replay messages:
 
     node heroprotocol.js replay.StormReplay -m -x
 
+To extrac everything:
+
+    node heroprotocol.js replay.StormReplay -H -d -i -g -m -t -a --extract
+
+## Data reference
+
+The following files are in the archive and supported by the library:
+
+- replay.details (see `reference/replay.details.md` for details)
+- replay.initdata (see `reference/replay.initdata.md` for details)
+- replay.game.events
+- replay.message.events
+- replay.tracker.events
+- replay.attributes.events
+
+Also accessible is the replay header (see `reference/header.md` for details).
+
+The following files are in the archive but not supported by this port nor the original library yet:
+
+- replay.load.info
+- replay.resumable.events
+- replay.server.battlelobby
+- replay.smartcam.events
+- replay.sync.events
+- replay.sync.history
+    
 ## Supported Versions
 
 heroprotocoljs currently supports patch 15.6 (latest at the time of writing) and 15.5 of Heroes of the Storm. The current plan is to port all previous protocols from the original python library, which support all replay files written with retail versions of the game, and to port future publicly released protocol.
