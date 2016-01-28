@@ -1,29 +1,29 @@
 /*
 
   $ node extract.js file|dir ... [outdir] [-r] [-v]
-  
+
   Extracts the replays found at the given paths to the current working directory.
   Paths can be individual replays or a directory that will be scanned for replays.
   When providing a directory, use the -r option to explore recursively.
   Only scans for .StormReplay files in directories.
   If several paths are provided and the last is a directory, all extracted replays will be placed here.
-  
+
   Notifies if a needed replay protocol is not yet implemented.
-  
+
   Examples:
-  
+
     Extract replay1.StormReplay and replay2.StormReplay to the current directory:
       $ node extract.js replay1.StormReplay replay2.StormReplay
-      
+
     Extract replay the replays in the replayDir/ directory to the current directory:
       $ node extract.js replayDir/
-      
+
     Extract replay1.StormReplay, replay2.StormReplay and replays in the replayDir/ directory to the current directory:
       $ node extract.js replay1.StormReplay replayDir/ replay2.StormReplay
-      
+
     Extract replay.StormReplay and replays in the replayDir/ directory to the extractDir/ directory:
       $ node extract.js replay.StormReplay replayDir/ extractDir/
-      
+
    Todo:
      - estimate and display the remaining extraction time
      - add option to keep directory structure when extracting recursively
@@ -73,7 +73,7 @@ function getAllPaths(paths, top) {
           resolve(null);
         });
       }
-      
+
       // otherwise get file info
       fs.stat(path, (err, stats) => {
         if (err) {
@@ -81,7 +81,7 @@ function getAllPaths(paths, top) {
           invalidPaths.push(path);
           return resolve(null);
         }
-        
+
         if (stats.isDirectory()) {
           // if -r option was given, resolve paths in the directory recursively
           if (yargs.r || top) {
@@ -108,7 +108,7 @@ function extract(path) {
   return new Promise((resolve, reject) => {
     const t = Date.now();
     const replayDecoder = new ReplayDecoder(_path.join(process.cwd(), path));
-    
+
     if (!replayDecoder.protocol) {
       extractionFailed += 1;
       // save the missing protocol if possible
@@ -126,26 +126,26 @@ function extract(path) {
     const prev = process.cwd();
     process.chdir(extractDir);
     replayDecoder.extractSync('header');
-    
+
     replayDecoder.parse('details');
     replayDecoder.extractSync('details');
-    
+
     replayDecoder.parse('initdata');
     replayDecoder.extractSync('initdata');
-    
+
     replayDecoder.parse('gameevents');
     replayDecoder.extractSync('gameevents');
-    
+
     replayDecoder.parse('messageevents');
     replayDecoder.extractSync('messageevents');
-    
+
     replayDecoder.parse('trackerevents');
     replayDecoder.extractSync('trackerevents');
-    
+
     replayDecoder.parse('attributesevents');
     replayDecoder.extractSync('attributesevents');
     process.chdir(prev);
-    
+
     if (yargs.v) console.log(path, 'extracted in', ((Date.now() - t) / 1000) + 's');
     extractionDone += 1;
     resolve(true);
