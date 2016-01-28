@@ -117,20 +117,32 @@ ReplayDecoder.prototype.parse = function(name) {
     return this.initdata = prepare(this.protocol.decodeReplayInitdata(this.archive.readFile('replay.initData')));
   } else if (name === 'gameevents') {
     this.gameevents = [];
-    for (event of this.protocol.decodeReplayGameEvents(this.archive.readFile('replay.game.events'))) {
-      this.gameevents.push(prepare(event));
+    try {
+      for (var event of this.protocol.decodeReplayGameEvents(this.archive.readFile('replay.game.events'))) {
+        this.gameevents.push(prepare(event));
+      }
+    } catch (err) {
+      console.trace(err);
     }
     return this.gameevents;
   } else if (name === 'messageevents') {
     this.messageevents = [];
-    for (event of this.protocol.decodeReplayMessageEvents(this.archive.readFile('replay.message.events'))) {
-      this.messageevents.push(prepare(event));
+    try {
+      for (var event of this.protocol.decodeReplayMessageEvents(this.archive.readFile('replay.message.events'))) {
+        this.messageevents.push(prepare(event));
+      }
+    } catch (err) {
+      console.trace(err);
     }
     return this.messageevents;
   } else if (name === 'trackerevents') {
     this.trackerevents = [];
-    for (event of this.protocol.decodeReplayTrackerEvents(this.archive.readFile('replay.tracker.events'))) {
-      this.trackerevents.push(prepare(event));
+    try {
+      for (var event of this.protocol.decodeReplayTrackerEvents(this.archive.readFile('replay.tracker.events'))) {
+        this.trackerevents.push(prepare(event));
+      }
+    } catch (err) {
+      console.trace(err);
     }
     return this.trackerevents;
   } else if (name === 'attributesevents') {
