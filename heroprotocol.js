@@ -213,12 +213,12 @@ if (require.main === module) {
 
     var replayDecoder = new ReplayDecoder(process.cwd() + path.sep + args._[0]);
 
-    if(!replayDecoder.protocol) process.exit(1);
-
     if (args.header) {
       if (args.print) replayDecoder.log('header');
       if (args.extract) replayDecoder.extractSync('header');
     }
+
+    if(!replayDecoder.protocol) process.exit(1);
 
     // Handle protocol details
     if (args.details) {
