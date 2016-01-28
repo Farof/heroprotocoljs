@@ -22,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/Farof/heroprotocoljs/issues"
   },
-  "homepage": "https://github.com/Farof/heroprotocoljs"
+  "homepage": "https://github.com/Farof/heroprotocoljs",
+  "engines" : {
+    "node" : ">=4.0.0"
+  }
 }
