@@ -28,6 +28,7 @@
      - estimate and display the remaining extraction time
      - add option to keep directory structure when extracting recursively
      - add option to skip extraction if files already exists
+     - options to only extract certain files
 
 */
 "use strict";
