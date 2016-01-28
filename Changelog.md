@@ -3,6 +3,7 @@
 # latest
 
 - Switch to javascript strict mode.
+- Added Changelog and Todo.
 
 # 0.1.2 - 2015-01-28
 
