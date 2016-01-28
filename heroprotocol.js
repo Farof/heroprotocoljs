@@ -19,6 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 */
+"use strict";
 
 const path = require('path');
 const fs = require('fs');
@@ -59,14 +60,14 @@ EventLogger.prototype.log = function(event) {
     stats[1] += event._bits; // count of bits
     this._eventStats[event._event] = stat;
   }
-  
+
   console.log(event);
 };
 
 EventLogger.prototype.logStats = function() {
   throw 'not yet ported';
   Object.keys(this._eventStats).sort().forEach(key => {
-    
+
   });
 };
 
@@ -89,16 +90,16 @@ const ReplayDecoder = exports.ReplayDecoder = function(file) {
   } else {
     console.log('Unsupported setup parameter: ', file);
   }
-  
+
   if (!this.archive) return null;
-  
+
   this.logger = new EventLogger();
-  
+
   // Read the protocol header, this can be read with any protocol
   var contents = this.archive.header.userDataHeader.content;
   this.header = prepare(protocol29406.decodeReplayHeader(contents));
-  
-  
+
+
   // The header's baseBuild determines which protocol to use
   this.baseBuild = this.header.m_version.m_baseBuild;
   try {
@@ -161,13 +162,13 @@ ReplayDecoder.prototype.extractSync = function(name) {
   var attr = name.split('.').join('');
   if (this[attr]) {
     var dirname = path.join(process.cwd(), path.basename(this.filename, path.extname(this.filename)));
-    
+
     try {
       fs.statSync(dirname);
     } catch (err) {
       fs.mkdirSync(dirname);
     }
-    
+
     try {
       fs.writeFileSync(
         path.join(dirname, ['replay', name, 'json'].join('.')),
@@ -197,74 +198,74 @@ if (require.main === module) {
                     //.option('s', { alias: 'stats', type: 'boolean', desc: 'print stat' })
                     .option('players', { type: 'boolean', desc: 'print players name' });
     const args = yargs.argv;
-    
+
     if (args.help) {
       yargs.showHelp();
       process.exit();
     }
-    
+
     if (!args.print && !args.extract && !args.players) {
       console.log('At leas one command must be specified: -p --print, -x --extract, --players');
       process.exit(1);
     }
-    
+
     if (args.players) args.details = args.d = true;
-    
+
     var replayDecoder = new ReplayDecoder(process.cwd() + path.sep + args._[0]);
-    
+
     if(!replayDecoder.protocol) process.exit(1);
-    
+
     if (args.header) {
       if (args.print) replayDecoder.log('header');
       if (args.extract) replayDecoder.extractSync('header');
     }
-    
+
     // Handle protocol details
     if (args.details) {
       replayDecoder.parse('details');
       if (args.print) replayDecoder.log('details');
       if (args.extract) replayDecoder.extractSync('details');
     }
-    
+
     // Handle protocol init data
     if (args.initdata) {
       replayDecoder.parse('initdata');
       if (args.print) replayDecoder.log('initdata');
       if (args.extract) replayDecoder.extractSync('initdata');
     }
-    
+
     // Handle game events and/or game events stats
     if (args.gameevents) {
       replayDecoder.parse('gameevents');
       if (args.print) replayDecoder.log('gameevents');
       if (args.extract) replayDecoder.extractSync('game.events');
     }
-    
+
     // Handle message events
     if (args.messageevents) {
       replayDecoder.parse('messageevents');
       if (args.print) replayDecoder.log('messageevents');
       if (args.extract) replayDecoder.extractSync('message.events');
     }
-    
+
     // Handle tracker events
     if (args.trackerevents) {
       replayDecoder.parse('trackerevents');
       if (args.print) replayDecoder.log('trackerevents');
       if (args.extract) replayDecoder.extractSync('tracker.events');
     }
-    
+
     // Handle attributes events
     if (args.attributeevents) {
       replayDecoder.parse('attributesevents');
       if (args.print) replayDecoder.log('attributesevents');
       if (args.extract) replayDecoder.extractSync('attributes.events');
     }
-    
+
     // Print stats
     if (args.stats) {
       replayDecoder.logStats();
     }
-    
+
   })();
 }

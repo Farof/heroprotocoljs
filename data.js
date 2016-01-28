@@ -1,8 +1,9 @@
+"use strict";
 
 // intentional order for data mapping from replay information
 exports.realms = [
   undefined,      // either undefined if realm notation starts at 1 or maybe the PTR, should confirm with ptr replay
-  'live'      
+  'live'
 ];
 
 // intentional order for data mapping from replay information
