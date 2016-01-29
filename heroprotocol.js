@@ -56,8 +56,8 @@ EventLogger.prototype.log = function(event) {
   // update stats
   if ('_event' in event && '_bits' in event) {
     var stat = this._eventStats[event._event] || [0, 0];
-    stats[0] += 1; // count of events
-    stats[1] += event._bits; // count of bits
+    stat[0] += 1; // count of events
+    stat[1] += event._bits; // count of bits
     this._eventStats[event._event] = stat;
   }
 
@@ -85,7 +85,7 @@ const ReplayDecoder = exports.ReplayDecoder = function(file) {
       console.log(err);
     }
   } else if (file instanceof MPQArchive) {
-    archive = file;
+    var archive = file;
     if (archive.filename) this.filename = archive.filename;
   } else {
     console.log('Unsupported setup parameter: ', file);
