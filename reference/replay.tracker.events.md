@@ -135,11 +135,23 @@ Always identical to `m_upkeepPlayerId`?
 
 ## 6. m_unitTagIndex (number)
 
-Starts at 1 with 1 increments?
+m_unitTagIndex and m_unitTagRecycle are used to determine the unique identifier of the unit within the game.
 
-Simple unit counter?
+The formula to determine this value, known as m_tag, is m_unitTagIndex << 18 + m_unitTagRecycle. << is the bitwise shift operator
+
+m_tag is useful to determine what unit was targeted by a skill, for example in this NNet.Game.SCmdEvent present in the replay.game.events file:
+```
+{"_eventid": 27, "m_unitGroup": null, "_event": "NNet.Game.SCmdEvent", "m_abil": {"m_abilLink": 147, "m_abilCmdIndex": 0, "m_abilCmdData": null}, "_gameloop": 2365, "_bits": 264, "m_data": {"TargetUnit": {"m_snapshotControlPlayerId": 6, "m_snapshotPoint": {"y": 235853, "x": 579289, "z": 32441}, "m_snapshotUpkeepPlayerId": 6, "m_timer": 0, "m_targetUnitFlags": 111, "m_snapshotUnitLink": 281, "m_tag": 45350913}}, "_userid": {"m_userId": 5}, "m_cmdFlags": 2097408, "m_sequence": 451, "m_otherUnit": null}
+```
+we see that the unit with tag 45350913 was the target of the ability id 147 casted by player 5.
+
+It is also possible retrieve m_unitTagIndex and m_unitTagRecycle from m_tag, by using the following formula:
+m_unitTagIndex = (m_tag >> 18) & 0x00003fff
+m_unitTagRecycle = (m_tag) & 0x0003ffff
 
 ## 7. m_unitTagRecycle (number)
+
+Used to determine the unique identifier of a unit withing the replay. See m_unitTagIndex.
 
 ## 8. m_unitTypeName (number)
 
@@ -149,21 +161,75 @@ Known values:
 
 - CampOwnershipFlag
 - DiabloShrine - Diablo's trait respawn point? Not unique.
-- KingsCore
-- RegenGlobe
+- KingsCore - The core of each team
+- RegenGlobe - A pickable unit that grants a small health and mana amount
+- RegenGlobeNeutral - A pickable unit that grants a small health and mana amount, usually drops when fighting bosses, it's color is purple.
 - StormGameStartPathingBlocker - Gate blockers at the beginning of the game?
 - StormGameStartPathingBlockerDiagonal - Gate blockers at the beginning of the game?
+- TownCannonTowerDead
 - TownCannonTowerL2
+- TownCannonTowerL2Standalone
 - TownCannonTowerL3
 - TownCannonTowerL3Standalone
+- TownGateL215BLUR
 - TownGateL215BRUL
+- TownGateL2BLUR
+- TownGateL315BLUR
+- TownGateL315BRUL
+- TownGateL3BRUL
 - TownMoonwellL2
 - TownMoonwellL3
 - TownTownHallL2
 - TownTownHallL3
+- TownWallRadial14L3
+- TownWallRadial15L3
+- TownWallRadial16L2
+- TownWallRadial17L2
+- TownWallRadial17L3
+- TownWallRadial18L2
+- TownWallRadial18L3
+- TownWallRadial19L1
+- TownWallRadial19L2
+- TownWallRadial19L3
+- TownWallRadial20L3
+- TownWallRadial21L3
+- TownWallRadial2L3
+- TownWallRadial3L3
 - TownWallRadial4L2
+- TownWallRadial4L3
 - TownWallRadial5L2
-- WeaponRackSpecialHeaven
+- TownWallRadial5L3
+- TownWallRadial6L2
+- TownWallRadial6L3
+- TownWallRadial7L2
+- TownWallRadial7L3
+- TownWallRadial8L3
+- TownWallRadial9L3
+- TownGateL2VerticalLeftVisionBlocked
+- TownGateL2VerticalRightVisionBlocked
+- TownGateL3BLURBRVisionBlocked
+- TownGateL3BLURTLVisionBlocked
+- TownGateL3BRULBLVisionBlocked
+- TownGateL3BRULTRVisionBlocked
+- TownGateL3VerticalLeftVisionBlocked
+- TownGateL3VerticalRightVisionBlocked
+- LuxoriaTemple - Temple you can controll in the Sky Temple Map
+- GhostShipBeacon - Ghost ship you can 'controll' by paying coins
+- ItemSoulPickup - Item you can pickup in the Tomb of the Spider Map, awards 1 gem.
+- ItemSoulPickupFive - Item you can pickup in the Tomb of the Spider Map, awards 5 gems.
+- SoulEater - Big spider summoned when a team completes the required amount of item souls.
+- SoulEaterMinion - Medium spiders summoned by the big spider.
+- ItemSoulPickupTwenty - Item you can pickup in the Tomb of the Spider Map, awards 20 gems.
+- MercLanerMeleeOgre - Siege mercenaries
+- MercLanerSiegeGiant - Boss mercenarie that appears on most of the maps
+- MercLanerRangedOgre - Another siege mercenarie
+- JunglePlantHorror
+- FootmanMinion - The normal minion
+- WizardMinion - Wizard minion, usually drops a health globe when it dies
+- RangedMinion - Ranged minion
+- CatapultMinion - The catapult
+- JungleGraveGolemDefender - Boss unit summoned in Cursed Mines map
+
 
 Should map values to known in-game elements. Check each value count to narrow down what they could be.
 
@@ -189,15 +255,23 @@ You may receive a `NNet.Replay.Tracker.SUnitDiedEvent` after either a UnitInit o
 
 ## 5. m_killerPlayerId (number | null)
 
-References who gave the fatal blow to the unit that died?
+References who gave the fatal blow to the unit that died
 
 ## 6. m_killerUnitTagIndex (number | null)
 
+m_unitTagIndex for the unit that killed a particular unit, useful when the killer is not a human player but a NPC
+
 ## 7. m_killerUnitTagRecycle (number | null)
+
+m_unitTagRecycle for the unit that killed a particular unit, useful when the killer is not a human player but a NPC
 
 ## 8. m_unitTagIndex (number)
 
+See m_unitTagIndex for NNet.Replay.Tracker.SUnitBornEvent
+
 ## 9. m_unitTagRecycle (number)
+
+See m_unitTagRecycke for NNet.Replay.Tracker.SUnitBornEvent
 
 ## 10. m_x (number)
 
@@ -209,6 +283,13 @@ Unit death `y` coordinate.
 
 # NNet.Replay.Tracker.SUnitOwnerChangeEvent
 
+This event occurs when a unit changes ownership, for example when the Dragon Statue is controlled by a team:
+```
+{"m_unitTagIndex": 104, "m_unitTagRecycle": 110, "m_controlPlayerId": 11, "_eventid": 3, "_event": "NNet.Replay.Tracker.SUnitOwnerChangeEvent", "_gameloop": 16102, "_bits": 176, "m_upkeepPlayerId": 11}
+```
+
+Here m_upkeepPlayerId/m_controlPlayerId is 11, meaning the control of the statue was granted to the blue team.
+
 ## 5. m_controlPlayerId (number)
 
 References a player.
@@ -217,7 +298,11 @@ Always identical to `m_upkeepPlayerId`?
 
 ## 6. m_unitTagIndex (number)
 
+See m_unitTagIndex for NNet.Replay.Tracker.SUnitBornEvent
+
 ## 7. m_unitTagRecycle (number)
+
+See m_unitTagRecycle for NNet.Replay.Tracker.SUnitBornEvent
 
 ## 8. m_upkeepPlayerId (number)
 
@@ -240,6 +325,12 @@ Known values:
 # NNet.Replay.Tracker.SUpgradeEvent
 
 Limited number at the beginning of the game.
+Also used to determine when a unit is upgraded, for example when a player is transformed to a Dragon in the Dragon Shire map.
+
+```
+{"m_playerId": 4, "_eventid": 5, "m_count": 16, "_event": "NNet.Replay.Tracker.SUpgradeEvent", "_gameloop": 16165, "_bits": 296, "m_upgradeTypeName": "VehicleDragonUpgrade"}
+```
+Here, the fifth player, which belongs to the blue team (remember m_playerId is 0 based) took the dragon and was upgraded to VehicleDragonUpgrade unit.
 
 ## 5. m_count (number)
 
@@ -247,7 +338,7 @@ Limited number at the beginning of the game.
 
 References one of the 16 game slot, need to find which.
 
-Probably not always referencing a player because a possible value is `15`? 
+Probably not always referencing a player because a possible value is `15`?
 
 ## 7. m_upgradeTypeName (string)
 
@@ -258,6 +349,7 @@ Known values:
 - IsPlayer11
 - IsPlayer12
 - MinionsAreSpawning
+- VehicleDragonUpgrade
 
 # NNet.Replay.Tracker.SUnitInitEvent
 
