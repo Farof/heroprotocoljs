@@ -184,11 +184,11 @@ Always identical to `m_upkeepPlayerId`?
 
 ## 6. m_unitTagIndex (number)
 
-m_unitTagIndex and m_unitTagRecycle are used to determine the unique identifier of a unit within the game. Please refer to protocol.unitTag()
+`m_unitTagIndex` and `m_unitTagRecycle` are used to determine the unique identifier of a unit within the game. Please refer to `protocol.unitTag()`
 
 ## 7. m_unitTagRecycle (number)
 
-Used to determine the unique identifier of a unit withing the replay. See m_unitTagIndex.
+Used to determine the unique identifier of a unit withing the replay. Please refer to `protocol.unitTag()`
 
 ## 8. m_unitTypeName (number)
 
@@ -296,19 +296,19 @@ References who gave the fatal blow to the unit that died
 
 ## 6. m_killerUnitTagIndex (number | null)
 
-m_unitTagIndex for the unit that killed a particular unit, useful when the killer is not a human player but a NPC
+`m_unitTagIndex` for the unit that killed a particular unit, useful when the killer is not a human player but a NPC
 
 ## 7. m_killerUnitTagRecycle (number | null)
 
-m_unitTagRecycle for the unit that killed a particular unit, useful when the killer is not a human player but a NPC
+`m_unitTagRecycle` for the unit that killed a particular unit, useful when the killer is not a human player but a NPC
 
 ## 8. m_unitTagIndex (number)
 
-See m_unitTagIndex for NNet.Replay.Tracker.SUnitBornEvent
+Please refer to `protocol.unitTag()`
 
 ## 9. m_unitTagRecycle (number)
 
-See m_unitTagRecycke for NNet.Replay.Tracker.SUnitBornEvent
+Please refer to `protocol.unitTag()`
 
 ## 10. m_x (number)
 
@@ -322,10 +322,19 @@ Unit death `y` coordinate.
 
 This event occurs when a unit changes ownership, for example when the Dragon Statue is controlled by a team:
 ```
-{"m_unitTagIndex": 104, "m_unitTagRecycle": 110, "m_controlPlayerId": 11, "_eventid": 3, "_event": "NNet.Replay.Tracker.SUnitOwnerChangeEvent", "_gameloop": 16102, "_bits": 176, "m_upkeepPlayerId": 11}
+{
+    "m_unitTagIndex": 104,
+    "m_unitTagRecycle": 110,
+    "m_controlPlayerId": 11,
+    "_eventid": 3,
+    "_event": "NNet.Replay.Tracker.SUnitOwnerChangeEvent",
+    "_gameloop": 16102,
+    "_bits": 176,
+    "m_upkeepPlayerId": 11
+}
 ```
 
-Here m_upkeepPlayerId/m_controlPlayerId is 11, meaning the control of the statue was granted to the blue team.
+Here `m_upkeepPlayerId`/`m_controlPlayerId` is 11, meaning the control of the statue was granted to the blue team.
 
 ## 5. m_controlPlayerId (number)
 
@@ -335,11 +344,11 @@ Always identical to `m_upkeepPlayerId`?
 
 ## 6. m_unitTagIndex (number)
 
-See m_unitTagIndex for NNet.Replay.Tracker.SUnitBornEvent
+Please refer to `protocol.unitTag()`
 
 ## 7. m_unitTagRecycle (number)
 
-See m_unitTagRecycle for NNet.Replay.Tracker.SUnitBornEvent
+Please refer to `protocol.unitTag()`
 
 ## 8. m_upkeepPlayerId (number)
 
@@ -367,7 +376,7 @@ Also used to determine when a unit is upgraded, for example when a player is tra
 ```
 {"m_playerId": 4, "_eventid": 5, "m_count": 16, "_event": "NNet.Replay.Tracker.SUpgradeEvent", "_gameloop": 16165, "_bits": 296, "m_upgradeTypeName": "VehicleDragonUpgrade"}
 ```
-Here, the fifth player, which belongs to the blue team (remember m_playerId is 0 based) took the dragon and was upgraded to VehicleDragonUpgrade unit.
+Here, the fifth player, which belongs to the blue team (remember m_playerId is 0 based) took the dragon and was upgraded to `VehicleDragonUpgrade` unit.
 
 ## 5. m_count (number)
 
