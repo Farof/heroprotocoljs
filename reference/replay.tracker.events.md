@@ -374,7 +374,15 @@ Limited number at the beginning of the game.
 Also used to determine when a unit is upgraded, for example when a player is transformed to a Dragon in the Dragon Shire map.
 
 ```
-{"m_playerId": 4, "_eventid": 5, "m_count": 16, "_event": "NNet.Replay.Tracker.SUpgradeEvent", "_gameloop": 16165, "_bits": 296, "m_upgradeTypeName": "VehicleDragonUpgrade"}
+{
+    "m_playerId": 4,
+    "_eventid": 5,
+    "m_count": 16,
+    "_event": "NNet.Replay.Tracker.SUpgradeEvent",
+    "_bits": 296,
+    "_gameloop": 16165,
+    "m_upgradeTypeName": "VehicleDragonUpgrade"
+}
 ```
 Here, the fifth player, which belongs to the blue team (remember m_playerId is 0 based) took the dragon and was upgraded to `VehicleDragonUpgrade` unit.
 
