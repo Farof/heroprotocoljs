@@ -3,6 +3,55 @@ replay.tracker.events is an array containing events whose types are specified in
 ---
 
 **Convert unit tag index, recycle pairs into unit tags (as seen in `game.events`) with `protocol.unitTag(index, recycle)`**
+In order to calculate the unique identifier for the unit, known as `m_tag`, you need to do the following calculation:
+``` is m_unitTagIndex << 18 + m_unitTagRecycle```
+
+Where  << is the bitwise shift operator
+
+`m_tag` is useful to determine what unit was targeted by a skill, for example in this `NNet.Game.SCmdEvent` present in the `replay.game.events` file:
+
+```
+{
+    "_eventid": 27,
+    "m_unitGroup": null,
+    "_event": "NNet.Game.SCmdEvent",
+    "m_abil": {
+        "m_abilLink": 147,
+        "m_abilCmdIndex": 0,
+        "m_abilCmdData": null
+    },
+    "_gameloop": 2365,
+    "_bits": 264,
+    "m_data": {
+        "TargetUnit": {
+            "m_snapshotControlPlayerId": 6,
+            "m_snapshotPoint": {
+                "y": 235853,
+                "x": 579289,
+                "z": 32441
+            },
+            "m_snapshotUpkeepPlayerId": 6,
+            "m_timer": 0,
+            "m_targetUnitFlags": 111,
+            "m_snapshotUnitLink": 281,
+            "m_tag": 45350913
+        }
+    },
+    "_userid": {
+        "m_userId": 5
+    },
+    "m_cmdFlags": 2097408,
+    "m_sequence": 451,
+    "m_otherUnit": null
+}
+```
+we see that the unit with tag 45350913 was the target of the ability id 147 casted by player 5.
+
+It is also possible retrieve `m_unitTagIndex` and `m_unitTagRecycle` from `m_tag`, by using the following formula:
+```
+m_unitTagIndex = (m_tag >> 18) & 0x00003fff
+m_unitTagRecycle = (m_tag) & 0x0003ffff
+```
 
 There's a known issue where revived units are not tracked, and placeholder units track death but not birth.
 
@@ -135,19 +184,7 @@ Always identical to `m_upkeepPlayerId`?
 
 ## 6. m_unitTagIndex (number)
 
-m_unitTagIndex and m_unitTagRecycle are used to determine the unique identifier of the unit within the game.
-
-The formula to determine this value, known as m_tag, is m_unitTagIndex << 18 + m_unitTagRecycle. << is the bitwise shift operator
-
-m_tag is useful to determine what unit was targeted by a skill, for example in this NNet.Game.SCmdEvent present in the replay.game.events file:
-```
-{"_eventid": 27, "m_unitGroup": null, "_event": "NNet.Game.SCmdEvent", "m_abil": {"m_abilLink": 147, "m_abilCmdIndex": 0, "m_abilCmdData": null}, "_gameloop": 2365, "_bits": 264, "m_data": {"TargetUnit": {"m_snapshotControlPlayerId": 6, "m_snapshotPoint": {"y": 235853, "x": 579289, "z": 32441}, "m_snapshotUpkeepPlayerId": 6, "m_timer": 0, "m_targetUnitFlags": 111, "m_snapshotUnitLink": 281, "m_tag": 45350913}}, "_userid": {"m_userId": 5}, "m_cmdFlags": 2097408, "m_sequence": 451, "m_otherUnit": null}
-```
-we see that the unit with tag 45350913 was the target of the ability id 147 casted by player 5.
-
-It is also possible retrieve m_unitTagIndex and m_unitTagRecycle from m_tag, by using the following formula:
-m_unitTagIndex = (m_tag >> 18) & 0x00003fff
-m_unitTagRecycle = (m_tag) & 0x0003ffff
+m_unitTagIndex and m_unitTagRecycle are used to determine the unique identifier of a unit within the game. Please refer to protocol.unitTag()
 
 ## 7. m_unitTagRecycle (number)
 
@@ -213,13 +250,13 @@ Known values:
 - TownGateL3BRULTRVisionBlocked
 - TownGateL3VerticalLeftVisionBlocked
 - TownGateL3VerticalRightVisionBlocked
-- LuxoriaTemple - Temple you can controll in the Sky Temple Map
+- LuxoriaTemple - Temple you can controll in the `Sky Temple` map
 - GhostShipBeacon - Ghost ship you can 'controll' by paying coins
-- ItemSoulPickup - Item you can pickup in the Tomb of the Spider Map, awards 1 gem.
-- ItemSoulPickupFive - Item you can pickup in the Tomb of the Spider Map, awards 5 gems.
+- ItemSoulPickup - Item you can pickup in the `Tomb of the Spider` Map, awards 1 gem.
+- ItemSoulPickupFive - Item you can pickup in the `Tomb of the Spider` map, awards 5 gems.
 - SoulEater - Big spider summoned when a team completes the required amount of item souls.
-- SoulEaterMinion - Medium spiders summoned by the big spider.
-- ItemSoulPickupTwenty - Item you can pickup in the Tomb of the Spider Map, awards 20 gems.
+- SoulEaterMinion - Medium spiders summoned by the big spider in the `Tomb of the Spider` map
+- ItemSoulPickupTwenty - Item you can pickup in the `Tomb of the Spider` map, awards 20 gems.
 - MercLanerMeleeOgre - Siege mercenaries
 - MercLanerSiegeGiant - Boss mercenarie that appears on most of the maps
 - MercLanerRangedOgre - Another siege mercenarie
@@ -228,7 +265,7 @@ Known values:
 - WizardMinion - Wizard minion, usually drops a health globe when it dies
 - RangedMinion - Ranged minion
 - CatapultMinion - The catapult
-- JungleGraveGolemDefender - Boss unit summoned in Cursed Mines map
+- JungleGraveGolemDefender - Boss unit summoned in `Cursed Mines` map
 
 
 Should map values to known in-game elements. Check each value count to narrow down what they could be.
