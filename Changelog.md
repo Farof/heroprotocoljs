@@ -4,6 +4,8 @@
 
 - Switch to javascript strict mode.
 - Added Changelog and Todo.
+- PTR patch 16.0 protocol.
+- `heroprotocol.js` API streamlined
 
 # 0.1.2 - 2016-01-28
 

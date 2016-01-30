@@ -1,9 +1,12 @@
-const ReplayDecoder = require('../heroprotocol').ReplayDecoder;
+const heroprotocol = require('../heroprotocol');
 
-var decoder = new ReplayDecoder(process.argv[2]);
+const file = process.argv[2];
 
-var details = decoder.parse('details');
-var players = details.m_playerList.map(player => player.m_name.toString());
+const details = heroprotocol.get(heroprotocol.DETAILS, file);
 
-console.log('Map:', details.m_title);
-console.log('Players:', players.sort());
+if (details) {
+  const players = details.m_playerList.map(player => player.m_name.toString());
+
+  console.log('Map:', details.m_title);
+  console.log('Players:', players.sort());
+}
