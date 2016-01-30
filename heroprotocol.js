@@ -21,194 +21,195 @@
 */
 "use strict";
 
-const path = require('path');
 const fs = require('fs');
+const path = require('path');
+const MPQArchive = exports.MPQArchive = require('mpyqjs/mpyq').MPQArchive;
+const protocol29406 = exports.protocol =  require('./lib/protocol29406');
 
-const mpq = require('mpyqjs/mpyq');
-const MPQArchive = exports.MPQArchive = mpq.MPQArchive;
-const protocol29406 = require('./lib/protocol29406');
+const version = exports.version = require('./package.json').version;
 
-// sort object and read buffer strings, recursively
-function prepare(obj) {
-  if (!obj) {
-     return obj;
-  } else if (obj instanceof Buffer) {
-    return obj.toString();
-  } else if (Array.isArray(obj)) {
-    for (var i = 0, ln = obj.length; i < ln; i += 1) {
-      obj[i] = prepare(obj[i]);
+// parsable parts
+const HEADER            = exports.HEADER            = 'header';
+const DETAILS           = exports.DETAILS           = 'replay.details';
+const INITDATA          = exports.INITDATA          = 'replay.initdata';
+const GAME_EVENTS       = exports.GAME_EVENTS       = 'replay.game.events';
+const MESSAGE_EVENTS    = exports.MESSAGE_EVENTS    = 'replay.message.events';
+const TRACKER_EVENTS    = exports.TRACKER_EVENTS    = 'replay.tracker.events';
+const ATTRIBUTES_EVENTS = exports.ATTRIBUTES_EVENTS = 'replay.attributes.events';
+
+const decoderMap = {
+  [HEADER]:             'decodeReplayHeader',
+  [DETAILS]:            'decodeReplayDetails',
+  [INITDATA]:           'decodeReplayInitdata',
+  [GAME_EVENTS]:        'decodeReplayGameEvents',
+  [MESSAGE_EVENTS]:     'decodeReplayMessageEvents',
+  [TRACKER_EVENTS]:     'decodeReplayTrackerEvents',
+  [ATTRIBUTES_EVENTS]:  'decodeReplayAttributesEvents'
+};
+
+const parseStrings = function parseStrings(data) {
+  if (!data) return data;
+  else if (data instanceof Buffer) return data.toString();
+  else if (Array.isArray(data)) return data.map(item => parseStrings(item));
+  else if (typeof data === 'object') {
+    for (let key in data) {
+      data[key] = parseStrings(data[key]);
     }
-    return obj;
-  } else if (typeof obj === 'object') {
-    var ret = {};
-    Object.keys(obj).sort().forEach(key => ret[key] = prepare(obj[key]));
-    return ret;
   }
-  return obj;
+  return data;
 }
 
-// EventLogger
-function EventLogger() {
-  this._eventStats = {};
-}
+let lastUsed;
 
-EventLogger.prototype.log = function(event) {
-  // update stats
-  if ('_event' in event && '_bits' in event) {
-    var stat = this._eventStats[event._event] || [0, 0];
-    stats[0] += 1; // count of events
-    stats[1] += event._bits; // count of bits
-    this._eventStats[event._event] = stat;
-  }
+exports.open = function (file) {
+  let archive, header;
 
-  console.log(event);
-};
+  // TODO - should we check if the user is trying to open the lastUsed file
+  // and return the cache or assume they know what they're doing? Need usecase.
 
-EventLogger.prototype.logStats = function() {
-  throw 'not yet ported';
-  Object.keys(this._eventStats).sort().forEach(key => {
-
-  });
-};
-
-
-// ReplayDecoder
-const ReplayDecoder = exports.ReplayDecoder = function(file) {
   if (typeof file === 'string') {
     try {
-      if (!path.isAbsolute(file))
+      if (!path.isAbsolute(file)) {
         file = path.join(process.cwd(), file);
-      this.archive = new MPQArchive(file);
-      this.filename = file;
+      }
+      archive = new MPQArchive(file);
+      archive.filename = file;
     } catch (err) {
-      console.log('Error opening replay: ', file);
-      console.log(err);
+      archive = err;
     }
   } else if (file instanceof MPQArchive) {
+    // TODO - need to check what happens when instanciating an MPQArchive with
+    // invalid path and setup an error accordingly
     archive = file;
-    if (archive.filename) this.filename = archive.filename;
   } else {
-    console.log('Unsupported setup parameter: ', file);
+    archive = new Error('Unsupported parameter: ${file}');
   }
 
-  if (!this.archive) return null;
+  if (archive instanceof Error) return archive;
+  lastUsed = archive;
 
-  this.logger = new EventLogger();
-
-  // Read the protocol header, this can be read with any protocol
-  var contents = this.archive.header.userDataHeader.content;
-  this.header = prepare(protocol29406.decodeReplayHeader(contents));
-
-
+  // parse header
+  archive.data = {};
+  header = archive.data[HEADER] = parseStrings(protocol29406.decodeReplayHeader(archive.header.userDataHeader.content));
   // The header's baseBuild determines which protocol to use
-  this.baseBuild = this.header.m_version.m_baseBuild;
+  archive.baseBuild = header.m_version.m_baseBuild;
+
   try {
-    this.protocol = require('./lib/protocol' + this.baseBuild);
+    archive.protocol = require(`./lib/protocol${archive.baseBuild}`);
   } catch (err) {
-    // TODO - should return error instead of console.log to not pollute output
-    console.log('Unsupported base build: ' + this.baseBuild);
+    archive.error = err;
   }
+
+  archive.get = function (file) {
+    return exports.get(file, archive);
+  };
+
+
+  return archive;
 };
 
-ReplayDecoder.prototype.parse = function(name) {
-  if (name === 'details') {
-    return this.details = prepare(this.protocol.decodeReplayDetails(this.archive.readFile('replay.details')));
-  } else if (name === 'initdata') {
-    return this.initdata = prepare(this.protocol.decodeReplayInitdata(this.archive.readFile('replay.initData')));
-  } else if (name === 'gameevents') {
-    this.gameevents = [];
-    try {
-      for (var event of this.protocol.decodeReplayGameEvents(this.archive.readFile('replay.game.events'))) {
-        this.gameevents.push(prepare(event));
-      }
-    } catch (err) {
-      console.trace(err);
-    }
-    return this.gameevents;
-  } else if (name === 'messageevents') {
-    this.messageevents = [];
-    try {
-      for (var event of this.protocol.decodeReplayMessageEvents(this.archive.readFile('replay.message.events'))) {
-        this.messageevents.push(prepare(event));
-      }
-    } catch (err) {
-      console.trace(err);
-    }
-    return this.messageevents;
-  } else if (name === 'trackerevents') {
-    this.trackerevents = [];
-    try {
-      for (var event of this.protocol.decodeReplayTrackerEvents(this.archive.readFile('replay.tracker.events'))) {
-        this.trackerevents.push(prepare(event));
-      }
-    } catch (err) {
-      console.trace(err);
-    }
-    return this.trackerevents;
-  } else if (name === 'attributesevents') {
-    return this.attributesevents = prepare(this.protocol.decodeReplayAttributesEvents(this.archive.readFile('replay.attributes.events')));
+// returns the content of a file in a replay archive
+exports.get = function (archiveFile, archive) {
+  let data;
+  if (!lastUsed || !(archive instanceof MPQArchive) || archive !== lastUsed.filename) {
+    archive = exports.open(archive);
   } else {
-    console.log('Unsupported file:', name);
+    lastUsed = archive;
   }
-};
 
-ReplayDecoder.prototype.log = function(name) {
-  if (this[name]) {
-    if (name.indexOf('events') > -1) {
-      var events = this[name], event;
-      for (event of events) this.log(event);
-    } else {
-      if (name === 'initdata') {
-        this.logger.log(this.initdata.m_syncLobbyState.m_gameDescription.m_cacheHandles);
+  if (archive instanceof Error) {
+    return data;
+  }
+
+  if (archive.data[archiveFile]) {
+    data = archive.data[archiveFile];
+  } else {
+    if (archive.protocol) {
+      if ([DETAILS, INITDATA, ATTRIBUTES_EVENTS].indexOf(archiveFile) > -1) {
+        data = archive.data[archiveFile] =
+          parseStrings(archive.protocol[decoderMap[archiveFile]](
+            archive.readFile(archiveFile)
+          ));
+      } else if ([GAME_EVENTS, MESSAGE_EVENTS, TRACKER_EVENTS].indexOf(archiveFile) > -1) {
+        // protocol function to call is a generator
+        // use of the spread operator to generate all values
+        data = archive.data[archiveFile] =
+            [...archive.protocol[decoderMap[archiveFile]](archive.readFile(archiveFile))];
       }
-      this.logger.log(this[name]);
     }
   }
-};
 
-ReplayDecoder.prototype.logStats = function () {
-  this.logger.logStats();
-};
-
-ReplayDecoder.prototype.extractSync = function(name) {
-  var attr = name.split('.').join('');
-  if (this[attr]) {
-    var dirname = path.join(process.cwd(), path.basename(this.filename, path.extname(this.filename)));
-
-    try {
-      fs.statSync(dirname);
-    } catch (err) {
-      fs.mkdirSync(dirname);
-    }
-
-    try {
-      fs.writeFileSync(
-        path.join(dirname, ['replay', name, 'json'].join('.')),
-        JSON.stringify(this[attr], null, '  ')
-      );
-    } catch(err) {
-      console.trace(err);
-    }
-  }
+  return data;
 };
 
 if (require.main === module) {
   (function () {
+
+    class EventLogger {
+      constructor() {
+        this.eventStats = {};
+      }
+
+      log(event) {
+        function sort(obj) {
+          const ret = {};
+          Object.keys(obj).sort().forEach(key => {
+            const value = obj[key];
+            if (!value) {
+              ret[key] = value;
+            } else if (Array.isArray(value)) {
+              ret[key] = value.map(item => {
+                if (item && !Array.isArray(item) && typeof item === 'object')
+                  return sort(item);
+                else
+                  return item;
+              });
+            } else if (typeof value === 'object') {
+              ret[key] = sort(value);
+            } else {
+              ret[key] = value;
+            }
+          });
+          return ret;
+        }
+
+        let stat;
+
+        if (event && event._event && event._bits) {
+          stat = this.eventStats[event._event] || [0, 0];
+          stat[0] += 1;
+          stat[1] += event._bits;
+          this.eventStats[event._event] = stat;
+        }
+
+        event = sort(event);
+        console.log(args.json ? JSON.stringify(event, undefined, '  ') : event);
+      }
+
+      logStats() {
+        // order events by bits parsed and output them from most to least
+        Object.keys(this.eventStats).sort((b, a) => {
+          return this.eventStats[b][1] > this.eventStats[a][1];
+        }).forEach(name => {
+          const stat = this.eventStats[name]
+          console.log(`${name}, ${stat[0]}, ${stat[1]}`);
+        });
+      }
+    }
+
     const yargs = require('yargs')
-                    .usage('usage: heroprotocol.js replayFile [--help] [--gameevents] [--messageevents] [--trackerevents] [--attributeevents] [--header] [--details] [--initdata] [--stats] [--print] [--extract]')
+                    .usage('usage: heroprotocol.js replayFile [--help] [--header] [--details] [--initdata] [--gameevents] [--messageevents] [--trackerevents] [--attributeevents] [--stats]')
                     .demand(1)
                     .option('h', { alias: 'help', type: 'boolean', desc: 'show this help' })
-                    .option('p', { alias: 'print', type: 'boolean', desc: 'print parsed information' })
-                    .option('x', { alias: 'extract', type: 'boolean', desc: 'extract parsed information to disk in JSON format' })
-                    .option('H', { alias: 'header', type: 'boolean', desc: 'parse protocol header' })
-                    .option('d', { alias: 'details', type: 'boolean', desc: 'parse protocol details' })
-                    .option('i', { alias: 'initdata', type: 'boolean', desc: 'parse protocol initdata' })
-                    .option('g', { alias: 'gameevents', type: 'boolean', desc: 'parse protocol gameevents' })
-                    .option('m', { alias: 'messageevents', type: 'boolean', desc: 'parse protocol messageevents' })
-                    .option('t', { alias: 'trackerevents', type: 'boolean', desc: 'parse protocol trackerevents' })
-                    .option('a', { alias: 'attributeevents', type: 'boolean', desc: 'parse protocol attributeevents' })
-                    //.option('s', { alias: 'stats', type: 'boolean', desc: 'print stat' })
-                    .option('players', { type: 'boolean', desc: 'print players name' });
+                    .option('H', { alias: 'header', type: 'boolean', desc: 'print protocol header' })
+                    .option('d', { alias: 'details', type: 'boolean', desc: 'print protocol details' })
+                    .option('i', { alias: 'initdata', type: 'boolean', desc: 'print protocol initdata' })
+                    .option('g', { alias: 'gameevents', type: 'boolean', desc: 'print game events' })
+                    .option('m', { alias: 'messageevents', type: 'boolean', desc: 'print message events' })
+                    .option('t', { alias: 'trackerevents', type: 'boolean', desc: 'print tracker events' })
+                    .option('a', { alias: 'attributeevents', type: 'boolean', desc: 'print attribute events' })
+                    .option('s', { alias: 'stats', type: 'boolean', desc: 'print stats' })
+                    .option('json', { type: 'boolean', desc: 'prints in JSON format' });
     const args = yargs.argv;
 
     if (args.help) {
@@ -216,67 +217,52 @@ if (require.main === module) {
       process.exit();
     }
 
-    if (!args.print && !args.extract && !args.players) {
-      console.log('At leas one command must be specified: -p --print, -x --extract, --players');
+    const archive = exports.open(args._[0]);
+
+    if (archive instanceof Error) {
+      console.log(archive.error);
       process.exit(1);
     }
 
-    if (args.players) args.details = args.d = true;
-
-    var replayDecoder = new ReplayDecoder(process.cwd() + path.sep + args._[0]);
+    const logger = new EventLogger();
 
     if (args.header) {
-      if (args.print) replayDecoder.log('header');
-      if (args.extract) replayDecoder.extractSync('header');
+      logger.log(archive.data[HEADER]);
     }
 
-    if(!replayDecoder.protocol) process.exit(1);
+    if (!archive.protocol) {
+      console.log('Unsupported base build:', archive.baseBuild);
+      process.exit(1);
+    }
 
-    // Handle protocol details
     if (args.details) {
-      replayDecoder.parse('details');
-      if (args.print) replayDecoder.log('details');
-      if (args.extract) replayDecoder.extractSync('details');
+      logger.log(archive.get(DETAILS));
     }
 
-    // Handle protocol init data
     if (args.initdata) {
-      replayDecoder.parse('initdata');
-      if (args.print) replayDecoder.log('initdata');
-      if (args.extract) replayDecoder.extractSync('initdata');
+      const data = archive.get(INITDATA);
+      logger.log(data.m_syncLobbyState.m_gameDescription.m_cacheHandles);
+      logger.log(data);
     }
 
-    // Handle game events and/or game events stats
     if (args.gameevents) {
-      replayDecoder.parse('gameevents');
-      if (args.print) replayDecoder.log('gameevents');
-      if (args.extract) replayDecoder.extractSync('game.events');
+      logger.log(archive.get(GAME_EVENTS));
     }
 
-    // Handle message events
     if (args.messageevents) {
-      replayDecoder.parse('messageevents');
-      if (args.print) replayDecoder.log('messageevents');
-      if (args.extract) replayDecoder.extractSync('message.events');
+      logger.log(archive.get(MESSAGE_EVENTS));
     }
 
-    // Handle tracker events
     if (args.trackerevents) {
-      replayDecoder.parse('trackerevents');
-      if (args.print) replayDecoder.log('trackerevents');
-      if (args.extract) replayDecoder.extractSync('tracker.events');
+      logger.log(archive.get(TRACKER_EVENTS));
     }
 
-    // Handle attributes events
     if (args.attributeevents) {
-      replayDecoder.parse('attributesevents');
-      if (args.print) replayDecoder.log('attributesevents');
-      if (args.extract) replayDecoder.extractSync('attributes.events');
+      logger.log(archive.get(ATTRIBUTES_EVENTS));
     }
 
-    // Print stats
     if (args.stats) {
-      replayDecoder.logStats();
+      logger.logStats();
     }
 
   })();
