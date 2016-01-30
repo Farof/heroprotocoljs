@@ -3,8 +3,9 @@ replay.tracker.events is an array containing events whose types are specified in
 ---
 
 **Convert unit tag index, recycle pairs into unit tags (as seen in `game.events`) with `protocol.unitTag(index, recycle)`**
+
 In order to calculate the unique identifier for the unit, known as `m_tag`, you need to do the following calculation:
-``` is m_unitTagIndex << 18 + m_unitTagRecycle```
+```m_unitTagIndex << 18 + m_unitTagRecycle```
 
 Where  << is the bitwise shift operator
 
