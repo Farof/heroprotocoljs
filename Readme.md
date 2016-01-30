@@ -81,7 +81,7 @@ To extract the replay messages:
 
     node heroprotocol.js replay.StormReplay -m -x
 
-To extrac everything:
+To extract everything:
 
     node heroprotocol.js replay.StormReplay -H -d -i -g -m -t -a --extract
     
