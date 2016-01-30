@@ -46,7 +46,7 @@ Where  << is the bitwise shift operator
     "m_otherUnit": null
 }
 ```
-we see that the unit with tag 45350913 was the target of the ability id 147 casted by player 5.
+we see that the unit with tag `45350913` was the target of the ability id `147` casted by player `5`.
 
 It is also possible retrieve `m_unitTagIndex` and `m_unitTagRecycle` from `m_tag`, by using the following formula:
 ```
