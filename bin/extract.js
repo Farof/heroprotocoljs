@@ -10,7 +10,7 @@ const startTime = Date.now();
 const fs = require('fs');
 const _path = require('path');
 const yargs = require('yargs');
-const heroprotocol = require('../heroprotocol');
+const heroprotocol = require('../');
 
 const args = yargs.usage('usage: extract.js file|dir ... outdir [-h] [-p] [-r] [-v]')
                   .option('h', { alias: 'help', type: 'boolean', desc: 'show this help' })
