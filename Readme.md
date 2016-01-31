@@ -46,6 +46,10 @@ Output:
 
 ### As a command line tool
 
+    $ bin/heroprotocol.js map.StormReplay -H --json
+
+  Outputs the `map.StormReplay` replay header in JSON format.
+
     usage: bin/heroprotocol.js replayFile [--help] [--gameevents] [--messageevents]
     [--trackerevents] [--attributeevents] [--header] [--details] [--initdata]
     [--stats] [--json]
@@ -64,7 +68,11 @@ Output:
 
 To extract everything, you can use the extraction tool provided:
 
-    usage: bin/extract.js file|dir ... outdir [-h] [-p] [-r] [-v]
+    $ node bin/extract.js map.StormReplay extractionDir/ --pretty
+
+Extracts `map.StormReplay` in the `extractionDir` directory in prettified JSON.
+
+    usage: extract.js file|dir ... outdir [-h] [-p] [-r] [-v]
 
     Options:
     -h, --help       show this help                                      [boolean]

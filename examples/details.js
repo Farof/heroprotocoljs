@@ -1,4 +1,4 @@
-const heroprotocol = require('../heroprotocol');
+const heroprotocol = require('../');
 
 const file = process.argv[2];
 
