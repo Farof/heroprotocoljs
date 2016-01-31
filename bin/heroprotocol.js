@@ -7,14 +7,6 @@
 
 const heroprotocol = require('../');
 
-const HEADER            = heroprotocol.HEADER            = 'header';
-const DETAILS           = heroprotocol.DETAILS           = 'replay.details';
-const INITDATA          = heroprotocol.INITDATA          = 'replay.initdata';
-const GAME_EVENTS       = heroprotocol.GAME_EVENTS       = 'replay.game.events';
-const MESSAGE_EVENTS    = heroprotocol.MESSAGE_EVENTS    = 'replay.message.events';
-const TRACKER_EVENTS    = heroprotocol.TRACKER_EVENTS    = 'replay.tracker.events';
-const ATTRIBUTES_EVENTS = heroprotocol.ATTRIBUTES_EVENTS = 'replay.attributes.events';
-
 class EventLogger {
   constructor() {
     this.eventStats = {};
@@ -97,7 +89,7 @@ if (archive instanceof Error) {
 const logger = new EventLogger();
 
 if (args.header) {
-  logger.log(archive.data[HEADER]);
+  logger.log(archive.data[heroprotocol.HEADER]);
 }
 
 if (!archive.protocol) {
@@ -106,29 +98,29 @@ if (!archive.protocol) {
 }
 
 if (args.details) {
-  logger.log(archive.get(DETAILS));
+  logger.log(archive.get(heroprotocol.DETAILS));
 }
 
 if (args.initdata) {
-  const data = archive.get(INITDATA);
+  const data = archive.get(heroprotocol.INITDATA);
   logger.log(data.m_syncLobbyState.m_gameDescription.m_cacheHandles);
   logger.log(data);
 }
 
 if (args.gameevents) {
-  logger.log(archive.get(GAME_EVENTS));
+  logger.log(archive.get(heroprotocol.GAME_EVENTS));
 }
 
 if (args.messageevents) {
-  logger.log(archive.get(MESSAGE_EVENTS));
+  logger.log(archive.get(heroprotocol.MESSAGE_EVENTS));
 }
 
 if (args.trackerevents) {
-  logger.log(archive.get(TRACKER_EVENTS));
+  logger.log(archive.get(heroprotocol.TRACKER_EVENTS));
 }
 
 if (args.attributeevents) {
-  logger.log(archive.get(ATTRIBUTES_EVENTS));
+  logger.log(archive.get(heroprotocol.ATTRIBUTES_EVENTS));
 }
 
 if (args.stats) {
