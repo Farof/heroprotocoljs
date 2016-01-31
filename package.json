@@ -25,5 +25,12 @@
   "homepage": "https://github.com/Farof/heroprotocoljs",
   "engines": {
     "node": ">=4.0.0"
+  },
+  "devDependencies": {
+    "grunt": "latest",
+    "grunt-concurrent": "latest",
+    "grunt-contrib-jshint": "latest",
+    "grunt-contrib-watch": "latest",
+    "grunt-simple-mocha": "latest"
   }
 }
