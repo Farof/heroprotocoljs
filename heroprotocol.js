@@ -57,7 +57,7 @@ const parseStrings = function parseStrings(data) {
     }
   }
   return data;
-}
+};
 
 let lastUsed;
 
@@ -192,7 +192,7 @@ if (require.main === module) {
         Object.keys(this.eventStats).sort((b, a) => {
           return this.eventStats[b][1] > this.eventStats[a][1];
         }).forEach(name => {
-          const stat = this.eventStats[name]
+          const stat = this.eventStats[name];
           console.log(`${name}, ${stat[0]}, ${stat[1]}`);
         });
       }
