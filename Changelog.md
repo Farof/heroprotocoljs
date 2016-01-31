@@ -1,11 +1,11 @@
 # Changelog
 
-# latest
+# 0.2.0 - 2016-01-31
 
-- Switch to javascript strict mode.
+- `heroprotocol.js` API streamlined.
+- Every protocol ported, including PTR patch 16.0 protocol.
 - Added Changelog and Todo.
-- PTR patch 16.0 protocol.
-- `heroprotocol.js` API streamlined
+- Switch to javascript strict mode.
 
 # 0.1.2 - 2016-01-28
 
