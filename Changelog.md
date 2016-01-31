@@ -1,5 +1,10 @@
 # Changelog
 
+# 0.2.1 - 2016-01-31
+
+- Support NodeJS v4.x.x
+- Properly parse string Buffer in events
+
 # 0.2.0 - 2016-01-31
 
 - `heroprotocol.js` API streamlined.
