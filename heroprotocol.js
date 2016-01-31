@@ -132,9 +132,10 @@ exports.get = function (archiveFile, archive) {
           ));
       } else if ([GAME_EVENTS, MESSAGE_EVENTS, TRACKER_EVENTS].indexOf(archiveFile) > -1) {
         // protocol function to call is a generator
-        // use of the spread operator to generate all values
-        data = archive.data[archiveFile] =
-            [...archive.protocol[decoderMap[archiveFile]](archive.readFile(archiveFile))];
+        data = archive.data[archiveFile] = [];
+        for (let event of archive.protocol[decoderMap[archiveFile]](archive.readFile(archiveFile))) {
+          data.push(event);
+        }
       }
     }
   }
