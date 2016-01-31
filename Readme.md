@@ -26,7 +26,7 @@ to be just the first tool in the chain for your data mining application.
 
 An usage example is provided in the "example" folder. It displays the map name and players name.
 
-    const heroprotocol = require('../heroprotocol');
+    const heroprotocol = require('../');
 
     const file = process.argv[2];
 
@@ -46,7 +46,7 @@ Output:
 
 ### As a command line tool
 
-    usage: heroprotocol.js replayFile [--help] [--gameevents] [--messageevents]
+    usage: bin/heroprotocol.js replayFile [--help] [--gameevents] [--messageevents]
     [--trackerevents] [--attributeevents] [--header] [--details] [--initdata]
     [--stats] [--json]
 
@@ -64,7 +64,7 @@ Output:
 
 To extract everything, you can use the extraction tool provided:
 
-    usage: extract.js file|dir ... outdir [-h] [-p] [-r] [-v]
+    usage: bin/extract.js file|dir ... outdir [-h] [-p] [-r] [-v]
 
     Options:
     -h, --help       show this help                                      [boolean]
