@@ -1,4 +1,4 @@
-replay.message.events is an array containing events whose types are specified in the `protocol#####.js` files under the `message_event_types` variable.
+replay.message.events is an array containing events whose types are specified in the `lib/protocol#####.js` files under the `message_event_types` variable.
 
 Events contain generic properties and type specific properties.
 

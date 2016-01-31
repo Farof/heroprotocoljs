@@ -1,4 +1,4 @@
-replay.tracker.events is an array containing events whose types are specified in the `protocol#####.js` files under the `tracker_event_types` variable.
+replay.tracker.events is an array containing events whose types are specified in the `lib/protocol#####.js` files under the `tracker_event_types` variable.
 
 ---
 
