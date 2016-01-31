@@ -134,7 +134,7 @@ exports.get = function (archiveFile, archive) {
         // protocol function to call is a generator
         data = archive.data[archiveFile] = [];
         for (let event of archive.protocol[decoderMap[archiveFile]](archive.readFile(archiveFile))) {
-          data.push(event);
+          data.push(parseStrings(event));
         }
       }
     }
