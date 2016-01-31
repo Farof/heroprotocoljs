@@ -50,7 +50,7 @@ Output:
 
   Outputs the `map.StormReplay` replay header in JSON format.
 
-    usage: bin/heroprotocol.js replayFile [--help] [--gameevents] [--messageevents]
+    usage: heroprotocol.js replayFile [--help] [--gameevents] [--messageevents]
     [--trackerevents] [--attributeevents] [--header] [--details] [--initdata]
     [--stats] [--json]
 
