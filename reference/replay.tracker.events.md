@@ -2,12 +2,7 @@ replay.tracker.events is an array containing events whose types are specified in
 
 ---
 
-**Convert unit tag index, recycle pairs into unit tags (as seen in `game.events`) with `protocol.unitTag(index, recycle)`**
-
-In order to calculate the unique identifier for the unit, known as `m_tag`, you need to do the following calculation:
-```m_unitTagIndex << 18 + m_unitTagRecycle```
-
-Where  << is the bitwise shift operator
+Convert `m_unitTagIndex` and `m_unitTagRecycle` into a unit tag `m_tag` with `protocol.unitTag(m_unitTagIndex, m_unitTagRecycle)`.
 
 `m_tag` is useful to determine what unit was targeted by a skill, for example in this `NNet.Game.SCmdEvent` present in the `replay.game.events` file:
 
@@ -46,15 +41,12 @@ Where  << is the bitwise shift operator
     "m_otherUnit": null
 }
 ```
-we see that the unit with tag `45350913` was the target of the ability id `147` casted by player `5`.
 
-It is also possible retrieve `m_unitTagIndex` and `m_unitTagRecycle` from `m_tag`, by using the following formula:
-```
-m_unitTagIndex = (m_tag >> 18) & 0x00003fff
-m_unitTagRecycle = (m_tag) & 0x0003ffff
-```
+We see that the unit with tag `45350913` was the target of the ability id `147` casted by player `5`.
 
-There's a known issue where revived units are not tracked, and placeholder units track death but not birth.
+Convert `m_tag` into a unit tag index `m_unitTagIndex` and unit tag recycle `m_unitTagRecycle` with `protocol.unitTagIndex(m_tag)` and `protocol.unitTagRecycle(m_tag)`.
+
+There is a known issue where revived units are not tracked, and placeholder units track death but not birth.
 
 The first 10 events are `NNet.Replay.Tracker.SPlayerSetupEvent` events, one for each player. Should check if there are also 10 if playing with or versus A.I.
 
@@ -185,11 +177,11 @@ Always identical to `m_upkeepPlayerId`?
 
 ## 6. m_unitTagIndex (number)
 
-`m_unitTagIndex` and `m_unitTagRecycle` are used to determine the unique identifier of a unit within the game. Please refer to `protocol.unitTag()`
+See note concerning unit tags at the top of this document.
 
 ## 7. m_unitTagRecycle (number)
 
-Used to determine the unique identifier of a unit withing the replay. Please refer to `protocol.unitTag()`
+See note concerning unit tags at the top of this document.
 
 ## 8. m_unitTypeName (number)
 
@@ -198,10 +190,25 @@ Name for different units. Several with the same name can be born.
 Known values:
 
 - CampOwnershipFlag
+- CatapultMinion - The catapult
 - DiabloShrine - Diablo's trait respawn point? Not unique.
+- FootmanMinion - The normal minion
+- GhostShipBeacon - Ghost ship you can 'controll' by paying coins
+- ItemSoulPickup - Item you can pickup in the `Tomb of the Spider` Map, awards 1 gem.
+- ItemSoulPickupFive - Item you can pickup in the `Tomb of the Spider` map, awards 5 gems.
+- ItemSoulPickupTwenty - Item you can pickup in the `Tomb of the Spider` map, awards 20 gems.
+- JungleGraveGolemDefender - Boss unit summoned in `Cursed Mines` map
+- JunglePlantHorror
 - KingsCore - The core of each team
+- LuxoriaTemple - Temple you can controll in the `Sky Temple` map
+- MercLanerMeleeOgre - Siege mercenaries
+- MercLanerSiegeGiant - Boss mercenarie that appears on most of the maps
+- MercLanerRangedOgre - Another siege mercenarie
+- RangedMinion - Ranged minion
 - RegenGlobe - A pickable unit that grants a small health and mana amount
 - RegenGlobeNeutral - A pickable unit that grants a small health and mana amount, usually drops when fighting bosses, it's color is purple.
+- SoulEater - Big spider summoned when a team completes the required amount of item souls.
+- SoulEaterMinion - Medium spiders summoned by the big spider in the `Tomb of the Spider` map
 - StormGameStartPathingBlocker - Gate blockers at the beginning of the game?
 - StormGameStartPathingBlockerDiagonal - Gate blockers at the beginning of the game?
 - TownCannonTowerDead
@@ -251,22 +258,8 @@ Known values:
 - TownGateL3BRULTRVisionBlocked
 - TownGateL3VerticalLeftVisionBlocked
 - TownGateL3VerticalRightVisionBlocked
-- LuxoriaTemple - Temple you can controll in the `Sky Temple` map
-- GhostShipBeacon - Ghost ship you can 'controll' by paying coins
-- ItemSoulPickup - Item you can pickup in the `Tomb of the Spider` Map, awards 1 gem.
-- ItemSoulPickupFive - Item you can pickup in the `Tomb of the Spider` map, awards 5 gems.
-- SoulEater - Big spider summoned when a team completes the required amount of item souls.
-- SoulEaterMinion - Medium spiders summoned by the big spider in the `Tomb of the Spider` map
-- ItemSoulPickupTwenty - Item you can pickup in the `Tomb of the Spider` map, awards 20 gems.
-- MercLanerMeleeOgre - Siege mercenaries
-- MercLanerSiegeGiant - Boss mercenarie that appears on most of the maps
-- MercLanerRangedOgre - Another siege mercenarie
-- JunglePlantHorror
-- FootmanMinion - The normal minion
+- WeaponRackSpecialHeaven
 - WizardMinion - Wizard minion, usually drops a health globe when it dies
-- RangedMinion - Ranged minion
-- CatapultMinion - The catapult
-- JungleGraveGolemDefender - Boss unit summoned in `Cursed Mines` map
 
 
 Should map values to known in-game elements. Check each value count to narrow down what they could be.
@@ -293,23 +286,27 @@ You may receive a `NNet.Replay.Tracker.SUnitDiedEvent` after either a UnitInit o
 
 ## 5. m_killerPlayerId (number | null)
 
-References who gave the fatal blow to the unit that died
+References who gave the fatal blow to the unit that died.
 
 ## 6. m_killerUnitTagIndex (number | null)
 
-`m_unitTagIndex` for the unit that killed a particular unit, useful when the killer is not a human player but a NPC
+`m_unitTagIndex` for the unit that killed a particular unit, useful when the killer is not a human player but a NPC.
+
+See note concerning unit tags at the top of this document.
 
 ## 7. m_killerUnitTagRecycle (number | null)
 
-`m_unitTagRecycle` for the unit that killed a particular unit, useful when the killer is not a human player but a NPC
+`m_unitTagRecycle` for the unit that killed a particular unit, useful when the killer is not a human player but a NPC.
+
+See note concerning unit tags at the top of this document.
 
 ## 8. m_unitTagIndex (number)
 
-Please refer to `protocol.unitTag()`
+See note concerning unit tags at the top of this document.
 
 ## 9. m_unitTagRecycle (number)
 
-Please refer to `protocol.unitTag()`
+See note concerning unit tags at the top of this document.
 
 ## 10. m_x (number)
 
@@ -322,6 +319,7 @@ Unit death `y` coordinate.
 # NNet.Replay.Tracker.SUnitOwnerChangeEvent
 
 This event occurs when a unit changes ownership, for example when the Dragon Statue is controlled by a team:
+
 ```
 {
     "m_unitTagIndex": 104,
@@ -345,11 +343,11 @@ Always identical to `m_upkeepPlayerId`?
 
 ## 6. m_unitTagIndex (number)
 
-Please refer to `protocol.unitTag()`
+See note concerning unit tags at the top of this document.
 
 ## 7. m_unitTagRecycle (number)
 
-Please refer to `protocol.unitTag()`
+See note concerning unit tags at the top of this document.
 
 ## 8. m_upkeepPlayerId (number)
 
@@ -372,6 +370,7 @@ Known values:
 # NNet.Replay.Tracker.SUpgradeEvent
 
 Limited number at the beginning of the game.
+
 Also used to determine when a unit is upgraded, for example when a player is transformed to a Dragon in the Dragon Shire map.
 
 ```
@@ -385,7 +384,8 @@ Also used to determine when a unit is upgraded, for example when a player is tra
     "m_upgradeTypeName": "VehicleDragonUpgrade"
 }
 ```
-Here, the fifth player, which belongs to the blue team (remember m_playerId is 0 based) took the dragon and was upgraded to `VehicleDragonUpgrade` unit.
+
+Here, the player with `m_playerId` of `4`, which belongs to the blue team, took the dragon and was upgraded to `VehicleDragonUpgrade` unit.
 
 ## 5. m_count (number)
 
