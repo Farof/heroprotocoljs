@@ -170,6 +170,6 @@ getPaths(paths, true)
     process.exit(0);
   })
   .catch(err => {
-  console.log(err.stack);
-  process.exit(99);
-});
+    console.log(err.stack);
+    process.exit(99);
+  });
