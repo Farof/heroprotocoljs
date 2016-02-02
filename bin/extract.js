@@ -12,11 +12,12 @@ const _path = require('path');
 const yargs = require('yargs');
 const heroprotocol = require('../');
 
-const args = yargs.usage('usage: extract.js file|dir ... outdir [-h] [-p] [-r] [-v]')
+const args = yargs.usage('usage: extract.js file|dir ... outdir [-h] [-p] [-r] [-v] [-s]')
                   .option('h', { alias: 'help', type: 'boolean', desc: 'show this help' })
                   .option('p', { alias: 'pretty', type: 'boolean', desc: 'prettifies the json' })
                   .option('r', { alias: 'recursive', type: 'boolean', desc: 'scans input folders for replays recursively'})
                   .option('v', { alias: 'verbose', type: 'boolean', desc: 'prints additional info'})
+                  .option('s', { alias: 'skip-existing', type: 'boolean', desc: 'skip existing files' })
                   .argv;
 const spacing = args.pretty ? '  ' : undefined;
 const files = [heroprotocol.HEADER, heroprotocol.DETAILS, heroprotocol.INITDATA,
@@ -76,12 +77,27 @@ function getPaths(paths, top) {
 
 function writeFile(archive, file, dir) {
   return new Promise((resolve, reject) => {
-    const data = archive.get(file);
-    fs.writeFile(`${_path.join(dir, file)}.json`,
-    JSON.stringify(data, undefined, spacing), (err) => {
-      if (err) console.log(err);
-      resolve(err ? false : true);
+    fs.stat(`${_path.join(dir, file)}.json`, (err, stats) => {
+      if (err) {
+        console.log(err);
+        resolve(true);
+      }
+
+      if (stats.size > 0 && !args.s) {
+        const data = archive.get(file);
+        let toWrite = JSON.stringify(data, undefined, spacing);
+
+        fs.writeFile(`${_path.join(dir, file)}.json`,
+          toWrite, (err) => {
+          if (err) console.log(err);
+          resolve(err ? false : true);
+        }, (err) => {
+          resolve(err ? false : true);
+        });
+       } else console.log('not extracting', `${file}.json`);
+
     });
+
   });
 }
 
@@ -138,7 +154,7 @@ getPaths(paths, true)
       const extracTime = endTime - startTime;
 
       console.log();
-      console.log('extraction completed in ', (extracTime / 1000) + 's');
+      console.log('extraction completed in', (extracTime / 1000) + 's');
       console.log('--------------------');
       console.log('extracted:', extractionDone);
       console.log('failed:', extractionFailed);
@@ -147,7 +163,13 @@ getPaths(paths, true)
         console.log('missing protocols:', Array.from(protocols).join(', '));
       }
     }
+
+    // Exit based on disposition
+    if (protocols.size > 0) process.exit(2);
+    if (extractionFailed > 0) process.exit(1);
+    process.exit(0);
   })
   .catch(err => {
-  console.log(err.stack);
-});
+    console.log(err.stack);
+    process.exit(99);
+  });
