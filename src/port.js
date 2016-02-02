@@ -1,9 +1,13 @@
 "use strict";
 
 const fs = require('fs');
-const diff = require('diff');
+const path = require('path');
+const childProcess = require('child_process');
 
 const _data = require('../lib/data');
+
+const repository = 'https://github.com/Blizzard/heroprotocol.git';
+const cloneDir = './dist/heroprotocol';
 
 try {
   fs.mkdirSync('./dist/protocols');
@@ -11,11 +15,35 @@ try {
   if (err.code !== 'EEXIST') throw err;
 }
 
-const dir = '../heroprotocol';
-const regex = /protocol(\d+)\.py$/;
-const files = fs.readdirSync(dir).filter(file => {
-  return file.match(regex);
-});
+function spawn(cmd, args, verbose) {
+  return new Promise((resolve, reject) => {
+    const process = childProcess.spawn(cmd, args);
+
+    if (verbose) {
+      process.stdout.on('data', data => {
+        console.log(data.toString());
+      });
+
+      process.stderr.on('data', data => {
+        console.log(data.toString());
+      });
+    }
+
+    process.on('close', code => {
+      if (code === 0) resolve();
+      else reject();
+    });
+  });
+}
+
+function getHeroprotocol() {
+  return new Promise((resolve, reject) => {
+    fs.stat(`${cloneDir}/.git`, (err, stats) => {
+      if (err) spawn('git', ['clone', repository, cloneDir]).then(resolve, reject);
+      else spawn('git', ['pull']).then(resolve, reject);
+    });
+  });
+}
 
 const types = {
   tuple: function (str) {
@@ -161,70 +189,79 @@ const tokens = {
 const Protocol = exports.Protocol = class {
   constructor(file) {
     this.file = file;
-    this.parse();
+    this.name = path.basename(file);
+    this.jsName = this.name.replace(/\.py$/, '.js');
+    this.version = Number(file.match(/(\d+)\.py$/)[1]);
   }
 
   parse() {
-    const lines = fs.readFileSync(this.file, 'utf8').split(tokens.newline);
-    let line = 0, str;
+    return new Promise((resolve, reject) => {
+      fs.readFile(this.file, 'utf8', (err, raw) => {
+        if (err) return reject(err);
 
-    this.version = Number(this.file.match(regex)[1]);
-    this.typeinfos = [];
-    this.gameeventsTypes = [];
-    this.messageeventsTypes = [];
-    this.trackereventstypes = [];
+        const lines = raw.split(tokens.newline);
 
-    while (line < lines.length) {
-      str = lines[line].trim();
+        let line = 0, str;
 
-      if (str === tokens.typeinfosStart) {
-        line += 1;
-        str = lines[line].trim();
-        do {
-          this.typeinfos.push(this.parseTypeinfos(str));
-          line += 1;
-          str = lines[line].trim();
-        } while (str !== tokens.typeinfosEnd);
-      } else if (tokens.gameeventsStart === str) {
-        line += 1;
-        str = lines[line].trim();
-        do {
-          this.gameeventsTypes.push(this.parseEvent(str));
-          line += 1;
-          str = lines[line].trim();
-        } while (tokens.gameeventsEnd !== str);
-      } else if (tokens.messageeventsStart === str) {
-        line += 1;
-        str = lines[line].trim();
-        do {
-          this.messageeventsTypes.push(this.parseEvent(str));
-          line += 1;
-          str = lines[line].trim();
-        } while (tokens.messageeventsEnd !== str);
-      } else if (tokens.trackereventsStart === str) {
-        line += 1;
-        str = lines[line].trim();
-        do {
-          this.trackereventstypes.push(this.parseEvent(str));
-          line += 1;
-          str = lines[line].trim();
-        } while (tokens.trackereventsEnd !== str);
-      } else if (str.startsWith(tokens.gameeventsTypeid)) {
-        this.gameeventsTypeid = str.match(/\d+/)[0];
-      } else if (str.startsWith(tokens.messageeventsTypeid)) {
-        this.messageeventsTypeid = str.match(/\d+/)[0];
-      } else if (str.startsWith(tokens.trackereventsTypeid)) {
-        this.trackereventsTypeid = str.match(/\d+/)[0];
-      } else if (str.startsWith(tokens.headerTypeid)) {
-        this.headerTypeid = str.match(/\d+/)[0];
-      } else if (str.startsWith(tokens.detailsTypeid)) {
-        this.detailsTypeid = str.match(/\d+/)[0];
-      } else if (str.startsWith(tokens.initdataTypeid)) {
-        this.initdataTypeid = str.match(/\d+/)[0];
-      }
+        this.typeinfos = [];
+        this.gameeventsTypes = [];
+        this.messageeventsTypes = [];
+        this.trackereventstypes = [];
 
-      line += 1;
-    }
+        while (line < lines.length) {
+          str = lines[line].trim();
+
+          if (str === tokens.typeinfosStart) {
+            line += 1;
+            str = lines[line].trim();
+            do {
+              this.typeinfos.push(this.parseTypeinfos(str));
+              line += 1;
+              str = lines[line].trim();
+            } while (str !== tokens.typeinfosEnd);
+          } else if (tokens.gameeventsStart === str) {
+            line += 1;
+            str = lines[line].trim();
+            do {
+              this.gameeventsTypes.push(this.parseEvent(str));
+              line += 1;
+              str = lines[line].trim();
+            } while (tokens.gameeventsEnd !== str);
+          } else if (tokens.messageeventsStart === str) {
+            line += 1;
+            str = lines[line].trim();
+            do {
+              this.messageeventsTypes.push(this.parseEvent(str));
+              line += 1;
+              str = lines[line].trim();
+            } while (tokens.messageeventsEnd !== str);
+          } else if (tokens.trackereventsStart === str) {
+            line += 1;
+            str = lines[line].trim();
+            do {
+              this.trackereventstypes.push(this.parseEvent(str));
+              line += 1;
+              str = lines[line].trim();
+            } while (tokens.trackereventsEnd !== str);
+          } else if (str.startsWith(tokens.gameeventsTypeid)) {
+            this.gameeventsTypeid = str.match(/\d+/)[0];
+          } else if (str.startsWith(tokens.messageeventsTypeid)) {
+            this.messageeventsTypeid = str.match(/\d+/)[0];
+          } else if (str.startsWith(tokens.trackereventsTypeid)) {
+            this.trackereventsTypeid = str.match(/\d+/)[0];
+          } else if (str.startsWith(tokens.headerTypeid)) {
+            this.headerTypeid = str.match(/\d+/)[0];
+          } else if (str.startsWith(tokens.detailsTypeid)) {
+            this.detailsTypeid = str.match(/\d+/)[0];
+          } else if (str.startsWith(tokens.initdataTypeid)) {
+            this.initdataTypeid = str.match(/\d+/)[0];
+          }
+
+          line += 1;
+        }
+        resolve();
+      });
+    });
   }
 
   parseTypeinfos(str) {
@@ -249,7 +286,6 @@ const Protocol = exports.Protocol = class {
   }
 
   write() {
-    const file = `protocol${this.version}.js`;
     const buildInfos = _data.builds[this.version];
 
     let out = fs.readFileSync('./src/protocol.js.template', 'utf8');
@@ -308,12 +344,42 @@ const Protocol = exports.Protocol = class {
     out = out.replace('${detailsTypeid}', this.detailsTypeid);
     out = out.replace('${initdataTypeid}', this.initdataTypeid);
 
-    fs.writeFileSync(`./dist/protocols/${file}`, out);
+    return new Promise((resolve, reject) => {
+      fs.writeFile(`./dist/protocols/${this.jsName}`, out, (err) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
   }
 };
 
+getHeroprotocol().then(() => {
+  const files = fs.readdirSync(cloneDir).filter(file => {
+    return file.match(/protocol(\d+)\.py$/);
+  });
+  const succeses = [];
+  const failures = [];
 
-files.forEach(file => {
-  const proto = new Protocol(`${dir}/${file}`);
-  proto.write();
+  Promise.all(files.map(file => {
+    return new Promise((resolve, reject) => {
+      const proto = new Protocol(`${cloneDir}/${file}`);
+      proto.parse().then(() => {
+        proto.write().then(() => {
+          succeses.push(proto.jsName);
+          resolve();
+        }, err => {
+          failures.push(proto.jsName);
+          resolve();
+        });
+      }, err => {
+        failures.push(proto.jsName);
+        resolve();
+      });
+    });
+  })).then(() => {
+    console.log('Ported:', succeses.sort().join(', '));
+    console.log('Failed to port:', failures.sort().join(', '));
+  }).catch(console.log);
+}, () => {
+  console.log('Failed to fetch ');
 });
