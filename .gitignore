@@ -1,6 +1,7 @@
 *.StormReplay
 *.json
 replays
+dist
 
 # Logs
 logs
