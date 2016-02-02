@@ -1,5 +1,9 @@
 # Changelog
 
+# latest
+
+- Automated protocol port
+
 # 0.2.1 - 2016-01-31
 
 - Support NodeJS v4.x.x
