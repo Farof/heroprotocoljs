@@ -40,7 +40,11 @@ function getHeroprotocol() {
   return new Promise((resolve, reject) => {
     fs.stat(`${cloneDir}/.git`, (err, stats) => {
       if (err) spawn('git', ['clone', repository, cloneDir]).then(resolve, reject);
-      else spawn('git', ['pull']).then(resolve, reject);
+      else {
+        process.cwd(cloneDir);
+        spawn('git', ['pull']).then(resolve, reject);
+        process.cwd('../../');
+      }
     });
   });
 }
