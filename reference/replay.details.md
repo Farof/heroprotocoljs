@@ -126,6 +126,7 @@ Region number depending on if the game was played in European, American, Asian?
 
 Need to match a value to a region.
 
+1 = North America
 2 = Europe?
 
 ## 12.11. m_workingSetSlotId (number)
