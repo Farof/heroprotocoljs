@@ -117,7 +117,7 @@ Hero played.
 * `Mura` - Muradin
 * `Murk` - Murky
 * `Nova` - Nova
-* `Rand`
+* `Rand` - Random
 * `Rayn` - Raynor
 * `Rehg` - Rehgar
 * `Rexx` - Rexxar
