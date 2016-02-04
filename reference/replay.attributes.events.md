@@ -92,22 +92,22 @@ Hero played.
 * `Arts` - Artanis
 * `Azmo` - Azmodan
 * `Barb` - Sonya
-* `Butc` - The Butcher
+* `Butc` - Butcher
 * `CCho` - Cho
 * `Chen` - Chen
 * `Crus` - Johanna
-* `Demo`
+* `Demo` - Valla
 * `Diab` - Diablo
 * `Drya` - Lunara
 * `Faer` - Brightwing
 * `Fals` - Falstad
 * `Gall` - Gall
-* `Genn`
+* `Genn` - Graymane
 * `Illi` - Illidan
 * `Jain` - Jaina
 * `Kael` - Kael'thas
 * `Kerr` - Kerrigan
-* `L90E`
+* `L90E` - E.T.C.
 * `Leor` - Leoric
 * `LiLi` - Li Li
 * `Lost` - The Lost Vikings
@@ -132,6 +132,7 @@ Hero played.
 * `Tyrl` - Tyrael
 * `Uthe` - Uther
 * `Witc` - Nazeebo
+* `Wiza` - Li-Ming
 * `Zaga` - Zagara
 * `Zera` - Zeratul
 
@@ -667,7 +668,7 @@ Mount and coloring
 * `Dir1`
 * `Dir2`
 * `Dire`
-* `Diru`
+* `Diru` - Diablo Fire Feetsies
 * `FEL0`
 * `FEL1`
 * `FEL2`
