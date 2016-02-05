@@ -66,7 +66,7 @@ Event type.
 
 Not a unique identifier.
 
-## 4. _gameloop (null?)
+## 4. _gameloop (number)
 
 # NNet.Replay.Tracker.SPlayerStatsEvent
 
