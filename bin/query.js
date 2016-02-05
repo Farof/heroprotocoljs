@@ -1,5 +1,6 @@
 "use strict";
 
+const fs = require('fs');
 const heroprotocol = require('../');
 
 const yargs =
@@ -18,20 +19,23 @@ if (!args._[0]) {
   process.exit(1);
 }
 
-const archive = heroprotocol.open(args._[0]);
+function getFiles(path) {
+  return new Promise((resolve, reject) => {
+    fs.stat(path, (err, stats) => {
+      if (err) return reject(err);
 
-if (archive instanceof Error) {
-  console.log(archive);
-  process.exit(1);
+      if (stats.isDirectory()) {
+        fs.readdir(path, (err, files) => {
+          resolve(files.filter(file => file.endsWith('.StormReplay')).map(file => `${path}/${file}`));
+        });
+      } else if (!path.endsWith('.StormReplay')) {
+        reject(new Error('File must be a .StormReplay'));
+      } else {
+        resolve([path]);
+      }
+    });
+  });
 }
-
-let data;
-if (args.f === 'header') {
-  data = archive.get('header');
-} else {
-  data = archive.get(`replay.${args.f}`);
-}
-
 
 const opquery = /(.*?)(=|!=)(.*)/;
 function filter(ar, filter) {
@@ -64,7 +68,7 @@ function find(obj, query, map) {
     next = query.slice(match.index + sub.length + 3);
   } else if(query.indexOf('.') > -1) {
     part = query.slice(0, query.indexOf('.'));
-    next = query.slice(query.indexOf('.') + 1)
+    next = query.slice(query.indexOf('.') + 1);
   } else {
     part = query;
   }
@@ -84,12 +88,35 @@ function find(obj, query, map) {
   return value;
 }
 
-if (data) {
-  const value = find(data, args.q, args.f.includes('events'));
+getFiles(args._[0]).then(paths => {
+  Promise.all(paths.map(path => {
+    return new Promise((resolve, reject) => {
+      const archive = heroprotocol.open(path);
 
-  if (value) {
-    console.log(args.q, '=', Array.from(new Set(value)).sort());
-  } else {
-    console.log('Unknown query path: ', args.q);
-  }
-}
+      if (archive instanceof Error) {
+        console.log(archive);
+        process.exit(1);
+      }
+
+      let data;
+      if (args.f === 'header') {
+        data = archive.get('header');
+      } else {
+        data = archive.get(`replay.${args.f}`);
+      }
+
+      if (data) {
+        resolve(find(data, args.q, args.f.includes('events')));
+      } else {
+        resolve([]);
+      }
+    });
+  })).then(values => {
+    values = values.reduce((a, b) => a.concat(b), []);
+    console.log(JSON.stringify(Array.from(new Set(values)).sort(), undefined, '  '));
+  }, err => {
+    console.log(err);
+  });
+}, err => {
+  console.log(err);
+});
