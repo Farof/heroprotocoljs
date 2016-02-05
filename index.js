@@ -121,3 +121,42 @@ exports.get = function (archiveFile, archive) {
 
   return data;
 };
+
+/**
+ * parses a basic MPQ header
+ * @function
+ * @param {buffer} buffer - Header content from MPQ archive
+ * @returns {object} Header information from file
+ */
+exports.parseHeader = function (buffer) {
+  return parseStrings(protocol29406.decodeReplayHeader(buffer));
+};
+
+/**
+ * parses a buffer based on a given build
+ * @function
+ * @param {string} filename - Name of the file to assist in parsing
+ * @param {buffer} buffer - Binary file contents from MPQ archive
+ * @param {string} build - Build in which to parse the contents
+ * @returns {object} File contents
+ */
+exports.parseFile = function (filename, buffer, build) {
+  let data, protocol;
+
+  try {
+    protocol = require(`./lib/protocol${build}`);
+  } catch (err) {
+    return undefined;
+  }
+
+  if ([DETAILS, INITDATA, ATTRIBUTES_EVENTS].indexOf(filename) > -1) {
+    data = parseStrings(protocol[decoderMap[filename]](buffer));
+  } else if ([GAME_EVENTS, MESSAGE_EVENTS, TRACKER_EVENTS].indexOf(filename) > -1) {
+    data = [];
+    for (let event of protocol[decoderMap[filename]](buffer)) {
+      data.push(parseStrings(event));
+    }
+  }
+
+  return data;
+};
