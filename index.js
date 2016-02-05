@@ -135,18 +135,20 @@ exports.parseHeader = function (buffer) {
 /**
  * parses a buffer based on a given build
  * @function
+ * @param {string} filename - Name of the file to assist in parsing
  * @param {buffer} buffer - Binary file contents from MPQ archive
  * @param {string} build - Build in which to parse the contents
- * @param {string} filename - Name of the file to assist in parsing
  * @returns {object} File contents
  */
-exports.parseFile = function (buffer, build, filename) {
-  var data;
+exports.parseFile = function (filename, buffer, build) {
+  let data, protocol;
+
   try {
-    var protocol = require(`./lib/protocol${build}`);
+    protocol = require(`./lib/protocol${build}`);
   } catch (err) {
     return undefined;
   }
+
   if ([DETAILS, INITDATA, ATTRIBUTES_EVENTS].indexOf(filename) > -1) {
     data = parseStrings(protocol[decoderMap[filename]](buffer));
   } else if ([GAME_EVENTS, MESSAGE_EVENTS, TRACKER_EVENTS].indexOf(filename) > -1) {
@@ -155,5 +157,6 @@ exports.parseFile = function (buffer, build, filename) {
       data.push(parseStrings(event));
     }
   }
+
   return data;
 };
