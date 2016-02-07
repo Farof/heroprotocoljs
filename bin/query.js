@@ -1,3 +1,13 @@
+/*
+  Get the names of all players that are not bots:
+
+      $ node bin/query.js replays/ -f details -q "m_playerList[m_toon.m_id != 0].m_name"
+
+  Get the internal name of every unit that is born:
+
+      $  node bin/query.js replays/ -f tracker.events -q "[_event = NNet.Replay.Tracker.SUnitBornEvent].m_unitTypeName"
+*/
+
 "use strict";
 
 const fs = require('fs');
