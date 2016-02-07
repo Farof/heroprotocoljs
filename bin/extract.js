@@ -12,11 +12,18 @@ const _path = require('path');
 const yargs = require('yargs');
 const heroprotocol = require('../');
 
-const args = yargs.usage('usage: extract.js file|dir ... outdir [-h] [-p] [-r] [-v]')
+const args = yargs.usage('usage: extract.js file|dir ... outdir [-h] [-p] [-r] [-v]\n\nExtracts replays to the given directory or current directory of none is specified. Extracs the full replay by default.')
                   .option('h', { alias: 'help', type: 'boolean', desc: 'show this help' })
                   .option('p', { alias: 'pretty', type: 'boolean', desc: 'prettifies the json' })
                   .option('r', { alias: 'recursive', type: 'boolean', desc: 'scans input folders for replays recursively' })
                   .option('s', { alias: 'skip-existing', type: 'boolean', desc: 'skips extraction of already existing files' })
+                  .option('H', { alias: 'header', type: 'boolean', desc: 'extract protocol header' })
+                  .option('d', { alias: 'details', type: 'boolean', desc: 'extract protocol details' })
+                  .option('i', { alias: 'initdata', type: 'boolean', desc: 'extract protocol initdata' })
+                  .option('g', { alias: 'gameevents', type: 'boolean', desc: 'extract game events' })
+                  .option('m', { alias: 'messageevents', type: 'boolean', desc: 'extract message events' })
+                  .option('t', { alias: 'trackerevents', type: 'boolean', desc: 'extract tracker events' })
+                  .option('a', { alias: 'attributeevents', type: 'boolean', desc: 'extract attribute events' })
                   .option('v', { alias: 'verbose', type: 'boolean', desc: 'prints additional info' })
                   .argv;
 const spacing = args.pretty ? '  ' : undefined;
@@ -134,7 +141,7 @@ function extractReplay(path) {
         return resolve(false);
       }
 
-      Promise.all(files.map(file => writeFile(archive, file, dir))).then(() => {
+      Promise.all(readFiles.map(file => writeFile(archive, file, dir))).then(() => {
         extractionDone += 1;
         resolve(true);
       });
@@ -151,6 +158,25 @@ if (!args._[0]) {
   yargs.showHelp();
   return process.exit(1);
 }
+
+let readFiles = [];
+
+if (args.H)
+  readFiles.push(heroprotocol.HEADER);
+if (args.d)
+  readFiles.push(heroprotocol.DETAILS);
+if (args.i)
+  readFiles.push(heroprotocol.INITDATA);
+if (args.g)
+  readFiles.push(heroprotocol.GAME_EVENTS);
+if (args.m)
+  readFiles.push(heroprotocol.MESSAGE_EVENTS);
+if (args.t)
+  readFiles.push(heroprotocol.TRACKER_EVENTS);
+if (args.a)
+  readFiles.push(heroprotocol.ATTRIBUTES_EVENTS);
+if (readFiles.length === 0)
+  readFiles = files;
 
 getPaths(paths, true)
   .then(paths => {
