@@ -74,11 +74,33 @@ function getPaths(paths, top) {
   });
 }
 
+function sort(obj) {
+  const ret = {};
+  Object.keys(obj).sort().forEach(key => {
+    const value = obj[key];
+    if (!value) {
+      ret[key] = value;
+    } else if (Array.isArray(value)) {
+      ret[key] = value.map(item => {
+        if (item && !Array.isArray(item) && typeof item === 'object')
+          return sort(item);
+        else
+          return item;
+      });
+    } else if (typeof value === 'object') {
+      ret[key] = sort(value);
+    } else {
+      ret[key] = value;
+    }
+  });
+  return ret;
+}
+
 function writeFile(archive, file, dir) {
   return new Promise((resolve, reject) => {
     const data = archive.get(file);
     fs.writeFile(`${_path.join(dir, file)}.json`,
-    JSON.stringify(data, undefined, spacing), (err) => {
+    JSON.stringify(args.pretty ? sort(data) : data, undefined, spacing), (err) => {
       if (err) console.log(err);
       resolve(err ? false : true);
     });
