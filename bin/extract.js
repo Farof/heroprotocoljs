@@ -15,8 +15,9 @@ const heroprotocol = require('../');
 const args = yargs.usage('usage: extract.js file|dir ... outdir [-h] [-p] [-r] [-v]')
                   .option('h', { alias: 'help', type: 'boolean', desc: 'show this help' })
                   .option('p', { alias: 'pretty', type: 'boolean', desc: 'prettifies the json' })
-                  .option('r', { alias: 'recursive', type: 'boolean', desc: 'scans input folders for replays recursively'})
-                  .option('v', { alias: 'verbose', type: 'boolean', desc: 'prints additional info'})
+                  .option('r', { alias: 'recursive', type: 'boolean', desc: 'scans input folders for replays recursively' })
+                  .option('s', { alias: 'skip-existing', type: 'boolean', desc: 'skips extraction of already existing files' })
+                  .option('v', { alias: 'verbose', type: 'boolean', desc: 'prints additional info' })
                   .argv;
 const spacing = args.pretty ? '  ' : undefined;
 const files = [heroprotocol.HEADER, heroprotocol.DETAILS, heroprotocol.INITDATA,
@@ -98,11 +99,17 @@ function sort(obj) {
 
 function writeFile(archive, file, dir) {
   return new Promise((resolve, reject) => {
-    const data = archive.get(file);
-    fs.writeFile(`${_path.join(dir, file)}.json`,
-    JSON.stringify(args.pretty ? sort(data) : data, undefined, spacing), (err) => {
-      if (err) console.log(err);
-      resolve(err ? false : true);
+    const path = `${_path.join(dir, file)}.json`;
+    fs.stat(path, (err, stats) => {
+      if (args.s && !err) {
+        return resolve(true);
+      }
+
+      const data = archive.get(file);
+      fs.writeFile(path, JSON.stringify(args.pretty ? sort(data) : data, undefined, spacing), (err) => {
+        if (err) console.log(err);
+        resolve(err ? false : true);
+      });
     });
   });
 }
