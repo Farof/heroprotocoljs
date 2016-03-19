@@ -5,12 +5,14 @@ const path = require('path');
 const childProcess = require('child_process');
 
 const _data = require('../lib/data');
+const _template = path.normalize(path.basename(__dirname) + '/../config/protocol.js.template');
 
 const repository = 'https://github.com/Blizzard/heroprotocol.git';
-const cloneDir = './dist/heroprotocol';
+const cloneDir = path.normalize(path.basename(__dirname) + '/../src/heroprotocol');
+const outDir = path.normalize(path.basename(__dirname) + '/../lib');
 
 try {
-  fs.mkdirSync('./dist/protocols');
+  fs.mkdirSync(path.normalize(path.basename(__dirname) + '/../src/'));
 } catch (err) {
   if (err.code !== 'EEXIST') throw err;
 }
@@ -172,7 +174,7 @@ const types = {
 };
 
 const tokens = {
-  newline: '\r\n',
+  newline: '\n',
   indent: '  ',
   typeinfosStart: 'typeinfos = [',
   typeinfosEnd: ']',
@@ -292,8 +294,11 @@ const Protocol = exports.Protocol = class {
   write() {
     const buildInfos = _data.builds[this.version];
 
-    let out = fs.readFileSync('./src/protocol.js.template', 'utf8');
+    let out = fs.readFileSync(_template, 'utf8');
+    let commit = fs.readFileSync(cloneDir + '/.git/refs/heads/master', 'utf8');
 
+    out = out.replace('${commit}', commit.trim());
+    out = out.replace('${date}', new Date().toISOString());
     out = out.replace('${version}', this.version);
 
     if (buildInfos) {
@@ -349,7 +354,7 @@ const Protocol = exports.Protocol = class {
     out = out.replace('${initdataTypeid}', this.initdataTypeid);
 
     return new Promise((resolve, reject) => {
-      fs.writeFile(`./dist/protocols/${this.jsName}`, out, (err) => {
+      fs.writeFile(`${outDir}/${this.jsName}`, out, (err) => {
         if (err) return reject(err);
         resolve();
       });
