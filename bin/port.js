@@ -298,7 +298,6 @@ const Protocol = exports.Protocol = class {
     let commit = fs.readFileSync(cloneDir + '/.git/refs/heads/master', 'utf8');
 
     out = out.replace('${commit}', commit.trim());
-    out = out.replace('${date}', new Date().toISOString());
     out = out.replace('${version}', this.version);
 
     if (buildInfos) {

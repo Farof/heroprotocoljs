@@ -11,6 +11,9 @@
     "type": "git",
     "url": "git+https://github.com/Farof/heroprotocoljs.git"
   },
+  "scripts" : {
+    "install" : "node bin/port.js"
+  },
   "keywords": [
     "hots",
     "blizzard",
