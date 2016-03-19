@@ -172,7 +172,7 @@ const types = {
 };
 
 const tokens = {
-  newline: '\r\n',
+  newline: '\n',
   indent: '  ',
   typeinfosStart: 'typeinfos = [',
   typeinfosEnd: ']',
