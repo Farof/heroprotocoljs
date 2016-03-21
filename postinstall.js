@@ -295,9 +295,7 @@ const Protocol = exports.Protocol = class {
     const buildInfos = _data.builds[this.version];
 
     let out = fs.readFileSync(_template, 'utf8');
-    let commit = fs.readFileSync(cloneDir + '/.git/refs/heads/master', 'utf8');
-
-    out = out.replace('${commit}', commit.trim());
+    out = out.replace('${date}', new Date().toUTCString());
     out = out.replace('${version}', this.version);
 
     if (buildInfos) {
