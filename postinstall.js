@@ -2,51 +2,35 @@
 
 const fs = require('fs-extra');
 const path = require('path');
-const childProcess = require('child_process');
+const download = require("download-github-repo");
 
 const _data = require('../lib/data');
 const _template = path.normalize(path.basename(__dirname) + '/../config/protocol.js.template');
 
-const repository = 'https://github.com/Blizzard/heroprotocol.git';
-const cloneDir = path.normalize(path.basename(__dirname) + '/../src/heroprotocol');
-const outDir = path.normalize(path.basename(__dirname) + '/../lib');
-
-try {
-  fs.mkdirSync(path.normalize(path.basename(__dirname) + '/../src/'));
-} catch (err) {
-  if (err.code !== 'EEXIST') throw err;
-}
-
-function spawn(cmd, args, verbose) {
-  return new Promise((resolve, reject) => {
-    const process = childProcess.spawn(cmd, args);
-
-    if (verbose) {
-      process.stdout.on('data', data => {
-        console.log(data.toString());
-      });
-
-      process.stderr.on('data', data => {
-        console.log(data.toString());
-      });
-    }
-
-    process.on('close', code => {
-      if (code === 0) resolve();
-      else reject();
-    });
-  });
-}
+const repository = 'Blizzard/heroprotocol';
+const cloneDir = path.normalize(__dirname+'/src');
+const outDir = path.normalize(__dirname+'/lib');
 
 function getHeroprotocol() {
   return new Promise((resolve, reject) => {
-    fs.stat(`${cloneDir}/.git`, (err, stats) => {
-      if (err) spawn('git', ['clone', repository, cloneDir]).then(resolve, reject);
-      else {
-        process.cwd(cloneDir);
-        spawn('git', ['pull']).then(resolve, reject);
-        process.cwd('../../');
-      }
+    fs.mkdirp(cloneDir, err => {
+      if (err) reject;
+
+      fs.readdir(cloneDir, (err, contents) => {
+        if (err) reject;
+
+        console.log("Downloading https://github.com/" + repository + " ...");
+
+        download(repository, cloneDir, err => {
+          if (!err)
+            resolve();
+          else {
+            console.error(err);
+            console.error("Error downloading https://github.com/" + repository);
+            process.exit(1);
+          }
+        });
+      });
     });
   });
 }
