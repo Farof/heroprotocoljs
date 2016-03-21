@@ -373,7 +373,7 @@ getHeroprotocol().then(() => {
     failures.sort().map(file => {
       console.error('FAILED:', file);
     });
-    if (failures !== null)
+    if (failures.length > 0)
       process.exit(2);
   }).catch(console.log);
 }, () => {
