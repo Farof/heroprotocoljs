@@ -347,7 +347,7 @@ getHeroprotocol().then(() => {
   const files = fs.readdirSync(cloneDir).filter(file => {
     return file.match(/protocol(\d+)\.py$/);
   });
-  const succeses = [];
+  const successes = [];
   const failures = [];
 
   Promise.all(files.map(file => {
@@ -355,7 +355,7 @@ getHeroprotocol().then(() => {
       const proto = new Protocol(`${cloneDir}/${file}`);
       proto.parse().then(() => {
         proto.write().then(() => {
-          succeses.push(proto.jsName);
+          successes.push(proto.jsName);
           resolve();
         }, err => {
           failures.push(proto.jsName);
@@ -367,8 +367,12 @@ getHeroprotocol().then(() => {
       });
     });
   })).then(() => {
-    console.log('Ported:', succeses.sort().join(', '));
-    console.log('Failed to port:', failures.sort().join(', '));
+    successes.sort().map(file => {
+      console.log('SUCCESS:', file);
+    });
+    failures.sort().map(file => {
+      console.error('FAILED:', file);
+    });
   }).catch(console.log);
 }, () => {
   console.log('Failed to fetch ');
