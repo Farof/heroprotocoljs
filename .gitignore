@@ -3,6 +3,10 @@
 replays
 dist
 
+# Auto Generation
+src/
+lib/protocol*.js
+
 # Logs
 logs
 *.log

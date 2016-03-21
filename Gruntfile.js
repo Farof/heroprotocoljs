@@ -4,11 +4,11 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         watch: {
-            files: ['*.js', 'bin/*.js', 'examples/*.js', 'lib/*.js', 'test/*.js' ],
+            files: ['*.js', 'bin/*.js', 'examples/*.js', 'lib/*.js', 'test/*.js', 'src/*.js' ],
             tasks: ['jshint']
         },
         jshint: {
-            all: ['*.js', 'bin/*.js', 'examples/*.js', 'lib/*.js', 'test/*.js' ],
+            all: ['*.js', 'bin/*.js', 'examples/*.js', 'lib/*.js', 'test/*.js', 'src/*.js' ],
             options: {
                 esversion: 6,
                 node: true,

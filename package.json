@@ -1,15 +1,20 @@
 {
   "name": "heroprotocoljs",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Javascript port of the heroprotocol Python library to decode Heroes of the Storm replay protocols.",
   "main": "index.js",
   "dependencies": {
+    "download-github-repo": "^0.1.3",
+    "fs-extra": "^0.26.7",
     "mpyqjs": "^1.0.1",
     "yargs": "^3.32.0"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Farof/heroprotocoljs.git"
+  },
+  "scripts": {
+    "postinstall": "node postinstall.js"
   },
   "keywords": [
     "hots",
@@ -18,6 +23,10 @@
     "mpq"
   ],
   "author": "Farof",
+  "contributors": [{
+    "name": "Justin J. Novack",
+    "email": "jnovack@gmail.com"
+  }],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Farof/heroprotocoljs/issues"
