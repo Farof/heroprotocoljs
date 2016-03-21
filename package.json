@@ -23,6 +23,10 @@
     "mpq"
   ],
   "author": "Farof",
+  "contributors": [{
+    "name": "Justin J. Novack",
+    "email": "jnovack@gmail.com"
+  }],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Farof/heroprotocoljs/issues"
