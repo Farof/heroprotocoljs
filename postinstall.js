@@ -373,7 +373,10 @@ getHeroprotocol().then(() => {
     failures.sort().map(file => {
       console.error('FAILED:', file);
     });
+    if (failures !== null)
+      process.exit(2);
   }).catch(console.log);
 }, () => {
-  console.log('Failed to fetch ');
+  console.error('Failed to fetch files from',repository);
+  process.exit(1);
 });
